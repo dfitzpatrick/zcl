@@ -1,0 +1,28 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+django = "*"
+djangorestframework = "*"
+psycopg2-binary = "*"
+django-sslserver = "*"
+djangorestframework-jwt = "*"
+django-cors-headers = "*"
+beautifulsoup4 = "*"
+selenium = "*"
+mpyq = "*"
+boto3 = "*"
+django-storages = "*"
+celery = "*"
+redis = "*"
+django-debug-toolbar = "*"
+channels = "*"
+channels-redis = "*"
+s2protocol = "*"
+django-filter = "*"
+python-decouple = "*"
+requests = "*"

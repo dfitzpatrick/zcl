@@ -1,0 +1,43 @@
+version: '3.7'
+
+services:
+  db:
+    image: postgres:12.0-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: zclpassword
+    volumes:
+      - zclbackend_postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+  web: &project
+    env_file:
+      - ./.env
+    build: .
+    command: python /code/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+      #- c:/users/dfitz/projects/zclreplay/zclreplay:/usr/local/lib/python3.6/site-packages/zclreplay
+      #- c:/users/dfitz/projects/websubsub/websubsub:/usr/local/lib/python3.6/site-packages/websubsub
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+  redis:
+    image: redis:alpine
+    ports:
+      - 6379:6379
+  celery_worker:
+    <<: *project
+    command: celery -A zcl worker --loglevel=info -c 4
+    ports: []
+    environment:
+      - C_FORCE_ROOT=true
+    depends_on:
+      - redis
+      - db
+
+volumes:
+  zclbackend_postgres_data:

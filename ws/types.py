@@ -1,0 +1,5 @@
+NEW_MATCH = 'new_match'
+NOTIFICATION = 'notification'
+STREAM_START = 'stream_start'
+STREAM_STOP = 'stream_stop'
+PARSED_MATCH = 'parsed_match'
