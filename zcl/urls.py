@@ -4,7 +4,6 @@ from django.contrib import admin
 from django.shortcuts import render
 from django.urls import path, include, re_path
 import debug_toolbar
-git
 # Just serve the react app from here.
 def index(request):
     return render(request, "build/index.html")
