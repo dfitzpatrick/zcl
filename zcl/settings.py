@@ -102,6 +102,8 @@ STATICFILES_LOCATION = 'static'
 STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{STATICFILES_LOCATION}/'
 STATICFILES_STORAGE = 'zcl.custom_storages.StaticStorage'
 STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'frontend', "build"),
+    os.path.join(BASE_DIR, 'frontend', "public"),
     os.path.join(BASE_DIR, 'frontend', "build", "static"),
 
 )
