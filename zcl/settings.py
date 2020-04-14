@@ -9,6 +9,9 @@ February, 2020
 import os
 import socket
 from decouple import config
+import dj_database_url
+import django_heroku
+
 
 """
 BASE SETTINGS
@@ -71,6 +74,8 @@ URL PATH SETTINGS
 SITE_ID = 1
 STATIC_ROOT = '/static/'
 STATIC_URL = '/static/'
+STATICFILES_LOCATION = 'static'
+STATICFILES_STORAGE = 'zcl.custom_storages.StaticStorage'
 
 
 STATICFILES_DIRS = (
@@ -273,7 +278,9 @@ TEMPLATES = [
         },
     },
 ]
-
+db_from_env = dj_database_url.config()
+DATABASES['default'].update(db_from_env)
+django_heroku.settings(locals(), databases=False)
 
 
 
