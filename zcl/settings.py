@@ -79,8 +79,10 @@ STATICFILES_STORAGE = 'zcl.custom_storages.StaticStorage'
 
 
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'frontend', "build", "static"),
     os.path.join(BASE_DIR, 'frontend', "build"),
+    os.path.join(BASE_DIR, 'frontend', "public"),
+    os.path.join(BASE_DIR, 'frontend', "build", "static"),
+
 )
 SITE_URL = config('SITE_URL')
 PUBLIC_SITE_URL = config('PUBLIC_SITE_URL')
