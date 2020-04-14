@@ -72,7 +72,7 @@ URL PATH SETTINGS
 -------------------------------------------------------------------------------
 """
 SITE_ID = 1
-#STATIC_ROOT = '/static/'
+
 
 
 
@@ -95,19 +95,17 @@ AMAZON WEB SERVICES
 AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY')
 AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = 'zcleagues'
+AWS_S3_REGION_NAME = 'us-west-1'
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
-AWS_S3_FILE_OVERWRITE = True
 AWS_DEFAULT_ACL = 'public-read'
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-#STATIC_URL = '/static/'
 STATICFILES_LOCATION = 'static'
 STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{STATICFILES_LOCATION}/'
 STATICFILES_STORAGE = 'zcl.custom_storages.StaticStorage'
-
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'frontend', "build", "static"),
 
 )
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 """
 AUTHENTICATION AND KEYS
@@ -187,12 +185,13 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
+    'storages',
     'accounts',
     'sslserver',
     'api',
     'channels',
     'websub',
-    'storages',
+
     'django_filters',
 
 
@@ -286,7 +285,7 @@ TEMPLATES = [
 ]
 db_from_env = dj_database_url.config()
 DATABASES['default'].update(db_from_env)
-django_heroku.settings(locals(), databases=False)
+django_heroku.settings(locals(), databases=False, staticfiles=False)
 
 
 
