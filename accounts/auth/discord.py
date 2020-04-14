@@ -6,7 +6,7 @@ from rest_framework.authtoken.models import Token
 
 from accounts import models
 from accounts.auth.base import AuthView
-
+from django.shortcuts import redirect
 
 class DiscordAuthView(AuthView):
     """
@@ -67,8 +67,9 @@ class DiscordAuthView(AuthView):
             login(request, user)
         else:
             # TODO: Email Unverified/Missing Redirect.
-            print("Email is unverified")
-        return http.HttpResponseRedirect(settings.FRONTEND + 'portal')
+            msg = "Your email address for your discount account must be verified."
+            return redirect(f'/zcl/error?code=401&msg={msg}')
+        return redirect('/portal')
 
 def discord_api(endpoint, token) -> requests.Response:
     """

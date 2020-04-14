@@ -14,6 +14,7 @@ from api.permissions import IsOwner
 from .models import DiscordUser
 from .models import SocialAccount
 from .serializers import SocialAccountSerializer
+from django.shortcuts import redirect
 
 
 class DiscordToLocalToken(APIView):
@@ -85,7 +86,7 @@ def logout(request):
     HttpResponseRedirect
     """
     auth.logout(request)
-    return HttpResponseRedirect(settings.FRONTEND)
+    return redirect(settings.SITE_URL)
 
 class Connections(viewsets.ModelViewSet):
     permission_classes = (IsOwner,)

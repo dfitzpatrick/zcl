@@ -40,12 +40,12 @@ export default function AuthNavbar(props) {
   var list = (
     <List className={classes.list}>
       <ListItem className={classes.listItem}>
-        <a href="/" className={classes.navLink}>
+        <a href="https://twitch.tv/zcleagues" target="_blank" className={classes.navLink}>
           <Icon className="fab fa-twitch" />
         </a>
       </ListItem>
       <ListItem className={classes.listItem}>
-        <a href="/" className={classes.navLink}>
+        <a href="https://www.youtube.com/channel/UCKEytOemGNqOjmbRCqzydXQ" target="_blank" className={classes.navLink}>
           <Icon className="fab fa-youtube" />
         </a>
       </ListItem>
@@ -53,7 +53,7 @@ export default function AuthNavbar(props) {
     
 
       <ListItem className={classes.listItem}>
-        <a href="/accounts/login" className={classes.navLink}>
+        <a href="/portal" className={classes.navLink}>
           <Icon className="fab fa-discord" /> Login
         </a>
       </ListItem>

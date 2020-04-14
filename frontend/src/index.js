@@ -26,6 +26,7 @@ import { withStore, useStore} from 'react-context-hook'
 import "assets/scss/material-dashboard-pro-react.scss?v=1.8.0";
 import {userInitialState} from "variables/general.js"
 import axios from "axios";
+import ErrorPage from "views/Pages/ErrorPage";
 const hist = createBrowserHistory();
 
 async function getCurrentUser() {
@@ -39,7 +40,7 @@ export const PrivateRoute = ({ component: Component, ...rest }) => {
   const [user, setUser, deleteUser] = useStore('user', userInitialState)
   console.log(user.authorized)
   if (user.loading) {
-    return (<div>Loading!</div>)
+    return (<div><h1> Please Wait</h1></div>)
   }
   if (!user.authorized) {
     getCurrentUser().then(user => {
@@ -47,11 +48,13 @@ export const PrivateRoute = ({ component: Component, ...rest }) => {
     })
   }
   return (
+    <>
   <Route {...rest} render={(props) => (
     user.authorized === true
       ? <Component {...props} />
-      : <Redirect to='/' />
+      : <Redirect to='/zcl/login' /> 
   )} />
+  </>
   )
 }
 
@@ -66,9 +69,13 @@ export default function App() {
     <div>
       <Router history={hist}>
       <Switch>
-      <Route exact path="/" component={AuthLayout} />
+      
+      <Route path="/zcl" component={AuthLayout} />
       <PrivateRoute path="/portal" component={AdminLayout} />
       <PrivateRoute path="/portal/matches/:id" component={AdminLayout} />
+      <Redirect exact from="/" to="/zcl/home" />
+    
+
       
     </Switch>
     </Router>

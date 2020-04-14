@@ -74,7 +74,7 @@ export default function Home() {
 
   
           <h3>Ready to Play?</h3>
-          <Button color="primary">Login w/ Discord</Button>
+          <Button href="/portal" color="primary">Login w/ Discord</Button>
 
 
 

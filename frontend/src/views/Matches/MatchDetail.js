@@ -26,6 +26,7 @@ import tankIcon from "assets/img/unitIcons/tank.png"
 import bunkerIcon from "assets/img/unitIcons/bunker.png"
 import Timeline from "components/Timeline/Timeline.js";
 import NavPills from "components/NavPills/NavPills.js";
+import { dataTable } from 'variables/general';
 
 const styles = {
     cardIconTitle: {
@@ -333,11 +334,20 @@ export default function MatchDetail(props) {
 
                                 </GridContainer>
                             </GridItem>
+                            
+                        </GridContainer>
+                    )
+                },
+                {
+                    tabButton: "Feed Bar",
+                    tabContent: (
+                        <GridContainer xs={12} sm={12} md={12}>
                             <GridItem xs={12} sm={3} md={5}>
                                 <Heading title="Feed Summary" />
-                                <FeedChart data={data.feed} />
+                                    <FeedChart data={dataTable.feed} />
                             </GridItem>
                         </GridContainer>
+
                     )
                 },
                 {

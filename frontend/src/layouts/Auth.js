@@ -12,12 +12,10 @@ import routes from "routes.js";
 
 import styles from "assets/jss/material-dashboard-pro-react/layouts/authStyle.js";
 
-import register from "assets/img/nova.jpg";
-import login from "assets/img/login.jpeg";
-import lock from "assets/img/lock.jpeg";
-import error from "assets/img/clint-mckoy.jpg";
-import pricing from "assets/img/bg-pricing.jpeg";
+import nova from "assets/img/nova.jpg";
 import HomePage from "views/Pages/HomePage.js"
+import ErrorPage from "views/Pages/ErrorPage";
+import LoginRedirect from "views/Pages/LoginRedirect";
 
 const useStyles = makeStyles(styles);
 
@@ -51,19 +49,7 @@ export default function Pages(props) {
     });
   };
   const getBgImage = () => {
-    if (window.location.pathname.indexOf("/auth/register-page") !== -1) {
-      return register;
-    } else if (window.location.pathname.indexOf("/auth/login-page") !== -1) {
-      return login;
-    } else if (window.location.pathname.indexOf("/auth/pricing-page") !== -1) {
-      return pricing;
-    } else if (
-      window.location.pathname.indexOf("/auth/lock-screen-page") !== -1
-    ) {
-      return lock;
-    } else if (window.location.pathname.indexOf("/auth/error-page") !== -1) {
-      return error;
-    }
+    return nova
   };
   const getActiveRoute = routes => {
     let activeRoute = "Default Brand Text";
@@ -93,7 +79,9 @@ export default function Pages(props) {
         >
           <Switch>
             {getRoutes(routes)}
-            <Route exact path='/' component={HomePage} />
+            <Route path='/zcl/home' component={HomePage} />
+            <Route path='/zcl/error' component={ErrorPage} />
+            <Route path='/zcl/login' component={LoginRedirect} />
           </Switch>
           <Footer white />
         </div>
