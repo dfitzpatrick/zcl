@@ -62,7 +62,7 @@ def social_account_delete(sender, instance, **kwargs):
             sub.unsubscribe(headers=headers)
             log.debug(f'WebSub Twitch ({twitch_name}/{username}) unsubscribed and deleted')
         except Subscription.DoesNotExist:
-            log.error(f"DELETE Failed for WebSub {instance.provider} UUID: {instance.uuid}")
+            log.error(f"DELETE Failed for WebSub {instance.provider} username: {username}")
             continue
 
     instance.twitch_streams.all().delete()

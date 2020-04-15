@@ -15,7 +15,9 @@ from .models import DiscordUser
 from .models import SocialAccount
 from .serializers import SocialAccountSerializer
 from django.shortcuts import redirect
+import logging
 
+log = logging.getLogger('zcl.accounts.views')
 
 class DiscordToLocalToken(APIView):
     """

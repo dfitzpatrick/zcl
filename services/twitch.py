@@ -7,6 +7,7 @@ from rest_framework import status
 
 from accounts.models import SocialAccount
 from websub.models import Subscription
+from django.conf import settings
 
 log = logging.getLogger('zcl.services.twitch')
 
@@ -20,7 +21,7 @@ class Helix:
                  secret=os.environ.get('TWITCH_CLIENT_SECRET'),
                  bearer=None,
                  ):
-        self.site = 'http://localhost:8000/'
+        self.site = settings.SITE_URL
         self.client_id = client_id
         self.secret = secret
         self.root = 'https://api.twitch.tv/helix'
