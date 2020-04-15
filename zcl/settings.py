@@ -42,7 +42,7 @@ DATASTORE AND TASKS
 """
 REDIS_URL = config('REDIS_URL', default='redis://redis:6379/0')
 CELERY_TASK_EAGER_PROPAGATES = True
-CELERY_BROKER_URL = REDIS_URL
+CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_TASK_SERIALIZER = 'pickle'
 CELERY_RESULT_SERIALIZER = 'pickle'
 CELERY_ACCEPT_CONTENT = ['json', 'application/x-python-serialize']
@@ -72,14 +72,22 @@ URL PATH SETTINGS
 -------------------------------------------------------------------------------
 """
 SITE_ID = 1
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = '/static/'
 
+#STATICFILES_LOCATION = 'static'
+#STATICFILES_STORAGE = 'zcl.custom_storages.StaticStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'frontend', "build", "static"),
+    os.path.join(BASE_DIR, 'frontend', "build"),
 
-
-
+)
 SITE_URL = config('SITE_URL')
 PUBLIC_SITE_URL = config('PUBLIC_SITE_URL')
 
+FRONTEND = "http://localhost:8000/"
 
 CORS_ORIGIN_ALLOW_ALL = True
 CSRF_TRUSTED_ORIGINS = ['localhost:3000']
@@ -95,18 +103,8 @@ AMAZON WEB SERVICES
 AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY')
 AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = 'zcleagues'
-AWS_S3_REGION_NAME = 'us-west-1'
-AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
-AWS_DEFAULT_ACL = 'public-read'
-STATICFILES_LOCATION = 'static'
-STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{STATICFILES_LOCATION}/'
-STATICFILES_STORAGE = 'zcl.custom_storages.StaticStorage'
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'frontend', "build"),
-    os.path.join(BASE_DIR, 'frontend', "public"),
-    os.path.join(BASE_DIR, 'frontend', "build", "static"),
-
-)
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = None
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 """
@@ -177,6 +175,7 @@ DJANGO APPLICATIONS
 """
 
 INSTALLED_APPS = [
+    'whitenoise.runserver_nostatic',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -187,13 +186,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
-    'storages',
     'accounts',
     'sslserver',
     'api',
     'channels',
     'websub',
-
     'django_filters',
 
 
@@ -257,6 +254,7 @@ LOGGING = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -287,7 +285,7 @@ TEMPLATES = [
 ]
 db_from_env = dj_database_url.config()
 DATABASES['default'].update(db_from_env)
-django_heroku.settings(locals(), databases=False, staticfiles=False)
+#django_heroku.settings(locals(), databases=False)
 
 
 

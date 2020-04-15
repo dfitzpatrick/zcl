@@ -254,7 +254,7 @@ coverage.xml
 
 # Scrapy stuff:
 .scrapy
-
+staticfiles
 # Sphinx documentation
 docs/_build/
 
