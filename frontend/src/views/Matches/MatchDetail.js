@@ -319,7 +319,7 @@ export default function MatchDetail(props) {
                     tabButton: "Roster",
                     tabContent: (
                         <GridContainer>
-                            <GridItem xs={12} sm={7n} md={7}>
+                            <GridItem xs={12} sm={7} md={7}>
                                 <Heading title="Roster" />
                                 <GridContainer>
                                     {match.data.teams.sort(teamSort).map(t => {
