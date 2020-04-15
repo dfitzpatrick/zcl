@@ -2,8 +2,8 @@ import logging
 
 import requests
 from django import http
-from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import redirect
 
 import services.twitch
 from accounts import models
@@ -39,7 +39,7 @@ class TwitchAuthView(LoginRequiredMixin, AuthView):
         if models.SocialAccount.objects.filter(provider='twitch', user=request.user, username=username).count() > 0:
             # Duplicate Account.
             sa.delete()
-            return http.HttpResponseRedirect(settings.FRONTEND + 'portal/connections')
+            return redirect('/portal/connections')
         else:
             sa.username = username
             sa.save()
@@ -53,8 +53,7 @@ class TwitchAuthView(LoginRequiredMixin, AuthView):
 
             }
         )
-        return http.HttpResponseRedirect(settings.FRONTEND + 'portal/connections')
+        return redirect('/portal/connections')
 
     def on_exchange_fail(self, request: http.HttpRequest, response: requests.Response) -> http.HttpResponse:
-        print("Fail")
         response.raise_for_status()
