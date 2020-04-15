@@ -42,7 +42,7 @@ DATASTORE AND TASKS
 """
 REDIS_URL = config('REDIS_URL', default='redis://redis:6379/0')
 CELERY_TASK_EAGER_PROPAGATES = True
-CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_BROKER_URL = REDIS_URL
 CELERY_TASK_SERIALIZER = 'pickle'
 CELERY_RESULT_SERIALIZER = 'pickle'
 CELERY_ACCEPT_CONTENT = ['json', 'application/x-python-serialize']
