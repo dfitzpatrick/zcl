@@ -342,9 +342,9 @@ export default function MatchDetail(props) {
                     tabButton: "Feed Bar",
                     tabContent: (
                         <GridContainer xs={12} sm={12} md={12}>
-                            <GridItem xs={12} sm={3} md={5}>
+                            <GridItem xs={12} sm={12} md={12}>
                                 <Heading title="Feed Summary" />
-                                    <FeedChart data={dataTable.feed} />
+                                    <FeedChart data={data.feed} />
                             </GridItem>
                         </GridContainer>
 

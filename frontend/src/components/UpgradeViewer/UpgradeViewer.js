@@ -8,6 +8,7 @@ import CardFooter from "components/Card/CardFooter.js";
 
 import Paper from '@material-ui/core/Paper';
 import { makeStyles } from '@material-ui/core/styles';
+import Heading from 'components/Heading/Heading';
 
 function getMaxLength(d) {
     let x = d
@@ -30,11 +31,11 @@ function makeUpgradeArraySameLength(data) {
 }
 
 function getUpgradeValue(player) {
-    const sumUp = (n) => [...Array(n).keys()].map(v=>(v+1)*25).reduce((a,b) => a + b, 0)
+    const sumUp = (n) => [...Array(n).keys()].map(v => (v + 1) * 25).reduce((a, b) => a + b, 0)
     return (
         sumUp(player.MarineArmor) +
         sumUp(player.MarineWeapons) +
-        sumUp(player.MarineAttackRange) + 
+        sumUp(player.MarineAttackRange) +
         sumUp(player.MarineLifeRegeneration) +
         sumUp(player.MarineMovespeed)
     )
@@ -52,7 +53,7 @@ export default function UpgradeViewer(props) {
             return false
         }
         let current = data[index]
-        let previous = data[index -1]
+        let previous = data[index - 1]
         if (getUpgradeValue(current) - getUpgradeValue(previous) > 0) {
             return "icon"
         } else {
@@ -61,18 +62,31 @@ export default function UpgradeViewer(props) {
     }
     return (
         <div>
-            <div id="sliderUpgradeSequence" className="slider-primary" />
-            <Slider
-                onChange={onSliderChange}
-                max={getMaxLength(data)}
-            />
+            <GridContainer xs={12} sm={12} md={12}> 
+                <GridItem>
+                    <Heading
+                    title="Upgrades"
+                    />
+                    <h4>Use the slider to see the upgrade progression.</h4>
+                </GridItem>
+                <GridItem xs={11} sm={11} md={11}>
+                    <div id="sliderUpgradeSequence" className="slider-primary"/>
+                    <Slider
+                        onChange={onSliderChange}
+                        max={getMaxLength(data)}
+                        style={{margin: '30px 30px 30px 30px'}}
+                    />
+
+                </GridItem>
+            </GridContainer>
+
             <GridContainer>
                 {data.map(e => (
 
                     <GridItem xs={12} sm={6} md={3}>
                         <Card>
                             <CardBody>
-                            
+
                                 <h3>{e[sliderIndex].name} ${getUpgradeValue(e[sliderIndex])}</h3>
                                 <hr />
                                 <GridContainer>
@@ -86,7 +100,7 @@ export default function UpgradeViewer(props) {
                                         <Paper>
                                             ATTACK
                                             <h3>{e[sliderIndex].MarineWeapons}</h3>
-                                        </Paper> 
+                                        </Paper>
                                     </GridItem>
                                     <GridItem>
                                         <Paper>
@@ -107,7 +121,7 @@ export default function UpgradeViewer(props) {
                                         </Paper>
                                     </GridItem>
                                 </GridContainer>
-                           
+
 
                             </CardBody>
                             <CardFooter>
