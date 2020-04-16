@@ -98,18 +98,17 @@ class Replay:
         self.fallback_versions = None
         _header_contents = self.archive.header['user_data_header']['content']
         protocol = versions.latest()
-
         _header = protocol.decode_replay_header(_header_contents)
         self.base_build = _header['m_version']['m_baseBuild']
         try:
             self.protocol = versions.build(self.base_build)
         except ImportError:
             # fall back version
-            self.fallback_versions = closest_version(self.base_build, versions)
-            next_lower = self.fallback_versions[0]
+            next_lower = closest_version(self.base_build, versions)[0]
             log.info(f"Missing Protocol {self.base_build}. Using Next Lower {next_lower}")
             self.protocol = versions.build(next_lower)
 
+        self.fallback_versions = closest_version(self.base_build, versions)
         self._header = _header
         self._events = None
         self._init_data = None

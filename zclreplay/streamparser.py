@@ -1,5 +1,5 @@
 from . import Replay, utils
-from .objects import MatchEvent, Event, Player
+from .objects import MatchEvent, Event, Player, StreamItem, SegmentEvent, UpgradeEvent
 import logging
 import typing
 
@@ -14,6 +14,13 @@ class StreamParser(Replay):
         super(StreamParser, self).__init__(path)
         self._load_objects()
         self._container = []
+        self.stream_game_length = 0
+        self.stream_segments = {
+            'early': None,
+            'three_teams': None,
+            'two_teams': None,
+            'final': None,
+        }
         self._load_objects()
 
     def __iter__(self):
@@ -121,6 +128,7 @@ class StreamParser(Replay):
         -------
         None
         """
+        result = None
         player = self.get_player(event['m_playerId'])
         # These can fire for observers based on Reward Skins.
         if player is not None:
@@ -130,6 +138,8 @@ class StreamParser(Replay):
                 return
             new_count = player.upgrade_totals.get(upgrade_name, 0) + count
             player.upgrade_totals[upgrade_name] = new_count
+            result = UpgradeEvent()
+        return result
 
 
     def _parse_unit_died(self, event: Event, init_event: Event):
@@ -284,6 +294,50 @@ class StreamParser(Replay):
         log.debug(description)
         return result
 
+
+    def _stream_segments(self, stream_item):
+        event = stream_item.event
+        state = stream_item.state
+        result = []
+        # Check for "Early Segment"
+        if self.stream_segments['early'] is None and float(event.game_time) > 480:  # 8m
+            item = StreamItem(event, state=self, payload=SegmentEvent(key='early', valid=True))
+            result.append(item)
+            self.stream_segments['early'] = item
+
+
+
+        if self.stream_segments['three_teams'] is None and state.teams_remaining <= 3:
+            # Check if this is a valid measurement
+            valid = len(self.teams) > 3
+            item = StreamItem(event, state=self, payload=SegmentEvent(key='three_teams', valid=valid))
+            result.append(item)
+            self.stream_segments['three_teams'] = item
+
+
+        if self.stream_segments['two_teams'] is None and state.teams_remaining <= 2:
+            # Check if this is a valid measurement
+            valid = len(self.teams) > 2
+            item = StreamItem(event, state=self, payload=SegmentEvent(key='two_teams', valid=valid))
+            result.append(item)
+            self.stream_segments['two_teams'] = item
+
+        if self.stream_segments['final'] is None and state.teams_remaining <= 1:
+            # Check if this is a valid measurement
+            valid = len(self.teams) > 1
+            item = StreamItem(event, state=self, payload=SegmentEvent(key='final', valid=valid))
+            result.append(item)
+            self.stream_segments['final'] = item
+            self.stream_game_length = event.game_time
+
+            # Fulfill Early if not done
+            if self.stream_segments['early'] is None:
+                item = StreamItem(event, state=self, payload=SegmentEvent(key='early', valid=False))
+                result.append(item)
+                self.stream_segments['early'] = item
+        return result
+
+
     def _parse(self):
         log.info(f"{self.game_id} - Parsing Game")
 
@@ -303,10 +357,13 @@ class StreamParser(Replay):
                 item.payload = self._parse_stats_update(event)
 
             if event.upgrade_event:
-                self._parse_upgrade(event)
+                item.payload = self._parse_upgrade(event)
 
             if event.unit_died and init_event is not None:
                 item.payload = self._parse_unit_died(event, init_event)
+
+            self._parse_check_for_segments(event)
+
 
             item.state = self
             if isinstance(item.payload, list):
@@ -315,9 +372,12 @@ class StreamParser(Replay):
             else:
                 yield item
 
+            # We check this last as it could yield a duplicate event per the above.
+            segment_stream_items = self._stream_segments(item)
+            for ssi in segment_stream_items:
+                yield ssi
 
-class StreamItem:
-    def __init__(self, event, payload=None, state: StreamParser=None):
-        self.state = state
-        self.event = event
-        self.payload = payload
+
+
+
+

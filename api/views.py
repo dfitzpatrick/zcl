@@ -188,9 +188,8 @@ class MatchView(viewsets.ModelViewSet):
                     distinct=True,
                 ))
                 .annotate(winners=StringAgg(
-                    'events__handle__name',
+                    'match_winners__profile__name',
                     delimiter=', ',
-                    filter=Q(events__key='WIN'),
                     distinct=True
                 ))
 

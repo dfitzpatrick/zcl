@@ -73,7 +73,7 @@ class ListFilter(filters.Filter):
 class LeaderboardListFilter(filters.Filter):
 
     def filter(self, qs, value):
-        if value is None:
+        if value is None or value == "":
             return qs
         values = value.split(',')
         query = Q()

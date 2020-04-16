@@ -9,7 +9,21 @@ from .units import UNIT_VALUES
 
 log = logging.getLogger(__name__)
 
+class StreamItem:
+    def __init__(self, event, payload=None, state=None):
+        self.state = state
+        self.event = event
+        self.payload = payload
 
+
+class SegmentEvent:
+    def __init__(self, key, valid):
+        self.key = key
+        self.valid = valid
+
+class UpgradeEvent:
+    def __init__(self):
+        pass
 
 
 class Event(dict):
@@ -189,7 +203,7 @@ class Player:
         key, length = 0, 0
         for i, o in enumerate(self._upgrades):
             if len(o.keys()) > length:
-                key, length = i, len(o.keys())
+                    key, length = i, len(o.keys())
 
         largest = self._upgrades[key]
 

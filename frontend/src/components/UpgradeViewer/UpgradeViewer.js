@@ -11,11 +11,15 @@ import { makeStyles } from '@material-ui/core/styles';
 import Heading from 'components/Heading/Heading';
 
 function getMaxLength(d) {
+    /*
     let x = d
     // For the slider to know what the max range is
     const result = Math.max(...x.map(e => e.length))
     return isNaN(result) ? 1 : result - 1
+    */
+   return d.length - 1
 }
+
 
 
 function makeUpgradeArraySameLength(data) {
@@ -32,6 +36,7 @@ function makeUpgradeArraySameLength(data) {
 
 function getUpgradeValue(player) {
     const sumUp = (n) => [...Array(n).keys()].map(v => (v + 1) * 25).reduce((a, b) => a + b, 0)
+    /*
     return (
         sumUp(player.MarineArmor) +
         sumUp(player.MarineWeapons) +
@@ -39,15 +44,39 @@ function getUpgradeValue(player) {
         sumUp(player.MarineLifeRegeneration) +
         sumUp(player.MarineMovespeed)
     )
+    */
+   return 0
 }
-
+const initalDataSelection = [
+    {
+        name: "Loading",
+        MarineArmor: 0,
+        MarineWeapons: 0,
+        MarineAttackRange: 0,
+        MarineLifeRegeneration: 0,
+        MarineMovespeed: 0,
+        total_score: 0,
+        game_time: 0,
+    }
+]
 
 export default function UpgradeViewer(props) {
-    const data = props.data == undefined ? [] : makeUpgradeArraySameLength(props.data)
+    //const data = props.data == undefined ? [] : makeUpgradeArraySameLength(props.data)
+    
+    
     const [sliderIndex, setSliderIndex] = React.useState(0)
+    const data = props.data == undefined ? [] : props.data
+    const [dataSelection, setDataSelection] = React.useState([])
     const onSliderChange = (e, v) => {
         setSliderIndex(v)
+        setDataSelection(data[v])
     }
+    // How to get this to auto update without losing Effect state?
+    React.useEffect(() => {
+        if (data.length > 0) {
+            setDataSelection(data[sliderIndex])
+        }
+    })
     const upgradesChanged = (data, index) => {
         if (index == 0) {
             return false
@@ -81,43 +110,43 @@ export default function UpgradeViewer(props) {
             </GridContainer>
 
             <GridContainer>
-                {data.map(e => (
+                {dataSelection.map(e => (
 
                     <GridItem xs={12} sm={6} md={3}>
                         <Card>
                             <CardBody>
 
-                                <h3>{e[sliderIndex].name} ${getUpgradeValue(e[sliderIndex])}</h3>
+                                <h3>{e.name} ${getUpgradeValue(e)}</h3>
                                 <hr />
                                 <GridContainer>
                                     <GridItem>
                                         <Paper>
                                             ARMOR
-                                            <h3>{e[sliderIndex].MarineArmor}</h3>
+                                            <h3>{e.MarineArmor}</h3>
                                         </Paper>
                                     </GridItem>
                                     <GridItem>
                                         <Paper>
                                             ATTACK
-                                            <h3>{e[sliderIndex].MarineWeapons}</h3>
+                                            <h3>{e.MarineWeapons}</h3>
                                         </Paper>
                                     </GridItem>
                                     <GridItem>
                                         <Paper>
                                             RANGE
-                                            <h3>{e[sliderIndex].MarineAttackRange}</h3>
+                                            <h3>{e.MarineAttackRange}</h3>
                                         </Paper>
                                     </GridItem>
                                     <GridItem>
                                         <Paper>
                                             REGEN
-                                            <h3>{e[sliderIndex].MarineLifeRegeneration}</h3>
+                                            <h3>{e.MarineLifeRegeneration}</h3>
                                         </Paper>
                                     </GridItem>
                                     <GridItem>
                                         <Paper>
                                             SPEED
-                                            <h3>{e[sliderIndex].MarineMovespeed}</h3>
+                                            <h3>{e.MarineMovespeed}</h3>
                                         </Paper>
                                     </GridItem>
                                 </GridContainer>
@@ -125,7 +154,7 @@ export default function UpgradeViewer(props) {
 
                             </CardBody>
                             <CardFooter>
-                                TS: {e[sliderIndex].total_score} | GT: {e[sliderIndex].game_time}
+                                TS: {e.total_score} | GT: {e.game_time}
                             </CardFooter>
 
                         </Card>
@@ -139,4 +168,5 @@ export default function UpgradeViewer(props) {
             </GridContainer>
         </div>
     )
+    
 }

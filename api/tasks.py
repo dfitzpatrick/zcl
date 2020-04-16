@@ -3,11 +3,17 @@ import typing
 import zclreplay
 from celery import shared_task
 from celery.utils.log import get_task_logger
+from s2protocol import versions
 
 import ws
 import ws.types
 from . import annotations
 from . import models, utils, serializers
+from zclreplay.streamparser import StreamParser, StreamItem
+from django.db import transaction
+from zclreplay import objects as replayobjects
+from copy import copy
+import tracemalloc
 
 log = get_task_logger('zcl.api.tasks')
 
@@ -49,11 +55,240 @@ def get_or_create_team(profiles: typing.List[models.SC2Profile]) -> models.Team:
     team.save()
     return team
 
+@shared_task
+def parse_replay(pk: int):
+    try:
+        replay_model = models.Replay.objects.get(id=pk)
+        replay = StreamParser(replay_model.file)
+        do_parse(replay_model, replay)
+    except (zclreplay.NotZCReplay, zclreplay.IncompleteReplay) as e:
+        log.error(f"Error Not valid replay: {e}")
+        return
+    except models.Replay.DoesNotExist:
+        log.error(f"Cannot find Database Object with pk {pk}")
+        return
+    except:
+        # Some random error occurred. Sometimes this is due to missing protocol
+        # We already use the lower protocol if its not found. Try the higher.
+        log.error("Failed to Parse Game. Trying Higher Protocol Version.")
+        replay_model = models.Replay.objects.get(id=pk)
+        replay = StreamParser(replay_model.file)
+        replay.protocol = versions.build(replay.fallback_versions[1])
+        do_parse(replay_model, replay)
 
+
+@transaction.atomic()
+def do_parse(replay_model, replay: StreamParser):
+    profile_cache = {}
+    match_team_container = {}
+
+
+    game_id = int(replay.game_id)
+
+
+    match, match_created = models.Match.objects.get_or_create(
+        id=game_id,
+        guild=models.Guild.objects.first(),
+        arcade_map=models.Game.objects.first(),
+        game_id=replay.game_id,
+    )
+    match.match_date = replay.game_time
+    match.save()
+    if not match_created:
+        # Re-parse. Clear out any match events or anything that could have different lengths
+        match.game_events.all().delete()
+
+    # Create team objects
+    for t in replay.teams:
+        if len(t.players) == 0:
+            continue
+        # convert to database instances
+        profiles_db = [utils.fetch_or_create_profile(pt, profile_cache) for pt in t.players]
+        team_db = get_or_create_team(profiles_db)
+        if match.draw:
+            outcome = 'draw'
+        else:
+            outcome = 'win' if t.winner else 'loss'
+
+        match_team, _ = models.MatchTeam.objects.update_or_create(
+            match=match,
+            team=team_db,
+            position=t.position,
+            outcome=outcome,
+        )
+        match_team_container[t.id] = match_team
+
+    upgrade_key_set = set()
+    time_series = []
+    unit_upgrades = []
+    for stream_item in replay._parse():
+        stream_item:StreamItem
+        payload = stream_item.payload
+        state:StreamParser = stream_item.state
+        event:replayobjects.Event = stream_item.event
+
+        if isinstance(payload, replayobjects.MatchEvent):
+            game_event_name, created = models.GameEventName.objects.get_or_create(
+                id=payload.key,
+                defaults={'title': f'New Game Event {payload.key}'}
+            )
+
+            ge_profile = utils.fetch_or_create_profile(payload.profile, profile_cache)
+            ge_opposing_profile = utils.fetch_or_create_profile(payload.opposing_profile, profile_cache)
+
+            game_event, updated = models.GameEvent.objects.update_or_create(
+                key=game_event_name,
+                match=match,
+                profile=ge_profile,
+                opposing_profile=ge_opposing_profile,
+                game_time=payload.game_time,
+                defaults={
+                    'game_time': payload.game_time,
+                    'value': payload.value,
+                    'description': payload.description,
+                    'total_score': payload.profile.unit_stats.total_score,
+                    'minerals_on_hand': payload.profile.unit_stats.minerals_on_hand,
+                }
+            )
+            # Generate the information for the Total Score and Minerals Floating
+            # Charts here. We'll upload them to S3 down below.
+            on_hand = lambda o: o.get('created', 0) - o.get('lost', 0) - o.get('cancelled', 0)
+            for event_player_state in state.players:
+                payload = {
+                    'id': event_player_state.profile_id,
+                    'name': event_player_state.name,
+                    'game_time': event.game_time,
+                    'total_score': event_player_state.unit_stats.total_score,
+                    'minerals_floated': event_player_state.unit_stats.minerals_on_hand,
+                    'bunkers': on_hand(event_player_state.unit_stats.bunkers),
+                    'tanks': on_hand(event_player_state.unit_stats.tanks),
+                    'depots': on_hand(event_player_state.unit_stats.depots),
+                    'nukes': on_hand(event_player_state.unit_stats.nukes),
+                    'current_supply': on_hand(event_player_state.unit_stats.biological_stats)
+
+                }
+                time_series.append(payload)
+
+        if isinstance(payload, replayobjects.SegmentEvent):
+            segment, created = models.Segment.objects.update_or_create(
+                measure=payload.key,
+                match=match,
+                defaults={
+                    'game_time': event.game_time,
+                    'valid': payload.valid,
+                }
+            )
+            for p in state.players:
+                segment_profile = utils.fetch_or_create_profile(p, profile_cache)
+                segment_lane = utils.fetch_or_create_profile(p.lane, profile_cache)
+                segment_killer = utils.fetch_or_create_profile(p.killer, profile_cache)
+                profile_item, created = models.SegmentProfileItem.objects.update_or_create(
+                    segment=segment,
+                    match=match,
+                    profile=segment_profile,
+                    defaults={
+                        'lane': segment_lane,
+                        'left_game': p.left_game,
+                        'eliminated': p.eliminated,
+                        'eliminated_by': segment_killer,
+                        'total_score': p.unit_stats.total_score,
+                        'minerals_on_hand': p.unit_stats.minerals_on_hand,
+                        'army_value': p.unit_stats.army_value,
+                        'tech_value': p.unit_stats.tech_value,
+                        'lost_tech_value': p.unit_stats.lost_tech_value,
+                        'tech_damage_value': p.unit_stats.tech_damage_value
+                    }
+                )
+                for u in p.unit_stats.totals[p].keys():
+                    # Just grab this current player stats and commit that
+                    # to the database. No vs data.
+                    unit, _ = models.Unit.objects.get_or_create(
+                        map_name=u
+                    )
+                    models.SegmentUnitStat.objects.update_or_create(
+                        segment_profile=profile_item,
+                        segment=segment,
+                        unit=unit,
+                        created=p.unit_stats.totals[p][u].get('created', 0),
+                        killed=p.unit_stats.totals[p][u].get('killed', 0),
+                        lost=p.unit_stats.totals[p][u].get('lost', 0),
+                        cancelled=p.unit_stats.totals[p][u].get('cancelled', 0)
+                    )
+        if isinstance(payload, replayobjects.UpgradeEvent):
+            container = []
+            for player_unit_upgrades in state.players:
+                ups = copy(player_unit_upgrades.upgrade_totals)
+                ups['profile_id'] = player_unit_upgrades.profile_id
+                ups['name'] = player_unit_upgrades.name
+                ups['game_time'] = event.game_time
+                ups['total_score'] = player_unit_upgrades.unit_stats.total_score
+                upgrade_key_set.update(ups.keys())
+                container.append(ups)
+            unit_upgrades.append(container)
+
+    # Get Roster information loaded
+    for p in replay.players:
+        p: zclreplay.Player
+        # Get player profile:
+        team = match_team_container[p.team.id]
+        profile = utils.fetch_or_create_profile(p, profile_cache)
+        lane_profile = utils.fetch_or_create_profile(p.lane, profile_cache)
+        killer = utils.fetch_or_create_profile(p.killer, profile_cache)
+
+        models.Roster.objects.update_or_create(
+            match=match,
+            sc2_profile=profile,
+            defaults={
+                'color': p.color_string,
+                'lane': lane_profile,
+                'team_number': p.team.id,
+                'position_number': p.position,
+                'team': team,
+            }
+        )
+        if p.winner:
+            models.MatchWinner.objects.update_or_create(
+                match=match,
+                profile=profile,
+                defaults = {
+                    'carried': p.eliminated
+                }
+            )
+        else:
+            models.MatchLoser.objects.update_or_create(
+                match=match,
+                profile=profile,
+                defaults={
+                    'killer': killer,
+                    'left_game': p.left_game,
+                    'game_time': float(p.eliminated_at),
+                    'victim_number': p.victim_number
+                }
+            )
+
+
+    for upgrade_iteration in unit_upgrades:
+        for player_upgrades in upgrade_iteration:
+            for k in upgrade_key_set:
+                if k not in player_upgrades.keys():
+                    player_upgrades[k] = 0
+
+
+    match.game_length = replay.stream_game_length
+    match.save()
+    replay_model.match = match
+    replay_model.save()
+    utils.gzip_chart_to_s3(unit_upgrades, match_id=replay.game_id, name='upgrades')
+    feed = [p.feed for p in replay.players]
+    utils.gzip_chart_to_s3(feed, match_id=replay.game_id, name='feed')
+    utils.gzip_chart_to_s3(time_series, match_id=replay.game_id, name='time_series')
+    utils.gzip_chart_to_s3(replay.unit_stats(), match_id=replay.game_id, name='unit_stats')
+
+    log.info(f"{replay.game_id} - Loaded to Database")
 
 
 @shared_task
-def parse_replay(pk: int):
+def parse_replay2(pk: int):
     """
 
     Parameters
@@ -64,6 +299,7 @@ def parse_replay(pk: int):
     -------
 
     """
+    tracemalloc.start()
     profile_cache = {}
 
     try:
@@ -307,3 +543,7 @@ def parse_replay(pk: int):
         'match': match_serialized,
     }
     ws.send_notification(payload)
+    current, peak = tracemalloc.get_traced_memory()
+    print(f"Current memory usage is {current / 10 ** 6}MB; Peak was {peak / 10 ** 6}MB")
+    tracemalloc.stop()
+

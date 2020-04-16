@@ -24,10 +24,8 @@ def qs_with_players() -> QuerySet:
             )
         )
         .annotate(winners=StringAgg(
-            'events__handle__name',
+            'match_winners__profile__name',
             delimiter=', ',
-            filter=Q(events__key='WIN'),
-            distinct=True
         ))
 
         .order_by('-match_date', 'rosters__team_number')
