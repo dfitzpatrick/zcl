@@ -95,6 +95,7 @@ class Replay:
 
     def __init__(self, path):
         self.archive = mpyq.MPQArchive(path)
+        self.fallback_versions = None
         _header_contents = self.archive.header['user_data_header']['content']
         protocol = versions.latest()
 
@@ -104,9 +105,11 @@ class Replay:
             self.protocol = versions.build(self.base_build)
         except ImportError:
             # fall back version
-            next_lower = closest_version(self.base_build, versions)[0]
+            self.fallback_versions = closest_version(self.base_build, versions)
+            next_lower = self.fallback_versions[0]
             log.info(f"Missing Protocol {self.base_build}. Using Next Lower {next_lower}")
             self.protocol = versions.build(next_lower)
+
         self._header = _header
         self._events = None
         self._init_data = None

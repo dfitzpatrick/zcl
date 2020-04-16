@@ -136,6 +136,8 @@ class Player:
         self.winner = False
         self.killer = None
         self.eliminated_at = 0.0
+        self.upgrade_totals = {}
+
 
 
     @property
@@ -146,6 +148,8 @@ class Player:
     def has_no_bunkers(self) -> bool:
         bunkers = self.unit_stats.bunkers
         return bunkers['created'] - bunkers.get('cancelled', 0) - bunkers['lost'] == 0
+
+
 
     def add_upgrade(self, event: Event):
         upgrade_name = event['m_upgradeTypeName']
