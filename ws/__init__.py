@@ -2,15 +2,16 @@ import logging
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+import json
 
 import ws.types
-
+from api.utils import serialize_drf_serializers
 CACHE = []
-CACHE_MAX_SIZE = 25
+CACHE_MAX_SIZE = 0
 
 log = logging.getLogger(__name__)
 
-def send_notification(payload):
+def send_notification(action_type, payload):
     global CACHE
     if payload in CACHE:
         return
@@ -21,8 +22,10 @@ def send_notification(payload):
     async_to_sync(channel_layer.group_send)(
         'notifications',
         {
-            'type': ws.types.NOTIFICATION,
+            'type': action_type,
+            'action': action_type,
+            'guild': 476518371320397834,
             'payload': payload
         }
     )
-    CACHE = CACHE[:CACHE_MAX_SIZE - 1] + [payload]
+    #CACHE = CACHE[:CACHE_MAX_SIZE - 1] + [payload]

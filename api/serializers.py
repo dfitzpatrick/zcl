@@ -31,6 +31,11 @@ class UserSerializer(serializers.ModelSerializer):
             )
         return None
 
+class TwitchStreamSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    class Meta:
+        model = models.TwitchStream
+        exclude = ('social_account',)
 
 class UserSerializerWithToken(serializers.ModelSerializer):
 
@@ -107,11 +112,11 @@ class SC2ProfileSerializer(serializers.ModelSerializer):
     #discord_users = DiscordUserSerializer(many=True)
     class Meta:
         model = models.SC2Profile
-        fields = ('id', 'created', 'name', 'profile_url', 'avatar_url', 'leaderboard')
+        fields = ('id', 'created', 'name', 'profile_url', 'avatar_url', 'leaderboards')
 
 
 class LeaderboardSerializer(serializers.ModelSerializer):
-    toon = SC2ProfileSerializer()
+    profile = SC2ProfileSerializer()
     losses = serializers.IntegerField()
     rank = serializers.IntegerField()
     name = serializers.CharField()
@@ -119,7 +124,7 @@ class LeaderboardSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Leaderboard
-        fields = ('id', 'name', 'rank', 'created', 'updated', 'toon', 'games', 'wins', 'losses', 'elo', 'win_rate')
+        fields = ('id', 'name', 'rank', 'created', 'updated', 'profile', 'games', 'wins', 'losses', 'elo', 'win_rate', 'mode')
 
 
 

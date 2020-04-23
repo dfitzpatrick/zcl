@@ -298,10 +298,15 @@ class Season(models.Model):
 class Leaderboard(models.Model):
     created = models.DateTimeField(auto_created=True, auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    toon = models.OneToOneField(SC2Profile, on_delete=models.CASCADE)
+    profile = models.ForeignKey(SC2Profile, on_delete=models.CASCADE, related_name='leaderboards')
     games = models.IntegerField(default=0)
     wins = models.IntegerField(default=0)
+    losses = models.IntegerField(default=0)
     elo = models.DecimalField(default=0, decimal_places=3, max_digits=7)
+    mode = models.CharField(max_length=50)
+
+    def __str__(self):
+        return "{0.profile.name}: {0.mode} / {0.elo} ELO".format(self)
 
 
 class Unit(models.Model):
@@ -387,7 +392,6 @@ class MatchTeam(WithTimeStamp):
 
 
 
-
 """
 Twitch Integrations. Keep this here or another app?
 """
@@ -400,6 +404,7 @@ class TwitchStream(models.Model):
     # For twitch streams, we link to the SocialAccount which also has the
     # Discord user that its linked to
     social_account = models.ForeignKey(SocialAccount, on_delete=models.CASCADE, related_name='twitch_streams')
+    user = models.ForeignKey(DiscordUser, on_delete=models.CASCADE, related_name='twitch_streams')
     username = models.CharField(max_length=300)
     active = models.BooleanField(default=False)
     extra_data = JSONField(default=dict)
@@ -413,15 +418,7 @@ class TwitchStream(models.Model):
         """
         return "https://twitch.tv/{0}".format(self.user_name)
 
-    @property
-    def user(self):
-        """
-        Shortcut to get to the user model
-        Returns
-        -------
 
-        """
-        return self.social_account.user
 
 
 

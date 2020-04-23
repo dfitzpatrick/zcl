@@ -14,10 +14,9 @@ def qs_with_ranking() -> QuerySet:
     board = (
         Leaderboard
         .objects
-        .select_related('toon')
+        .select_related('profile')
         .order_by('-elo')
-            .annotate(name=F("toon__name"))
-            .annotate(losses=F("games") - F("wins"))
+            .annotate(name=F("profile__name"))
             .annotate(rank=rank_window)
             .annotate(win_rate=Case(
             When(games=0, then=0),

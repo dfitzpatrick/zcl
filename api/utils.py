@@ -9,8 +9,13 @@ import requests
 import zclreplay
 from django.conf import settings
 
+
 from .models import SC2Profile
 
+def serialize_drf_serializers(obj):
+    if hasattr(obj, 'data'):
+        return obj.data
+    return obj
 
 def get_player_name(profile: SC2Profile) -> str:
     base_url = "https://starcraft2.com/en-us/profile"

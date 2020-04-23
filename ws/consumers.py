@@ -47,3 +47,11 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         if isinstance(payload, dict):
             payload = json.dumps(payload)
         await self.send(text_data=payload)
+
+    async def default_handler(self, payload):
+        if isinstance(payload, dict):
+            payload = json.dumps(payload)
+        await self.send(text_data=payload)
+
+    async def new_match_stream(self, payload):
+        return await self.default_handler(payload)

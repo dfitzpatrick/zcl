@@ -31,6 +31,7 @@ from api import annotations, filters
 from api.tasks import parse_replay
 from . import serializers, models
 from . import utils
+import json
 
 
 # Create your views here.
@@ -170,17 +171,12 @@ class MatchView(viewsets.ModelViewSet):
                 .objects
                 .select_related('guild')
                 .prefetch_related(
-                    'rosters__sc2_profile__leaderboard',
+                    'rosters__sc2_profile__leaderboards',
 
                     'matchteam_set',
-                    'matchteam_set__rosters__sc2_profile__leaderboard',
+                    'matchteam_set__rosters__sc2_profile__leaderboards',
 
-                    'matchteam_set__rosters__lane__leaderboard',
-
-
-
-
-
+                    'matchteam_set__rosters__lane__leaderboards',
                 )
                 .annotate(players=StringAgg(
                     'rosters__sc2_profile__name',
@@ -205,8 +201,8 @@ class MatchView(viewsets.ModelViewSet):
             .game_events
             .select_related('match', 'profile', 'opposing_profile')
             .prefetch_related(
-                'profile__leaderboard',
-                'opposing_profile__leaderboard',
+                'profile__leaderboards',
+                'opposing_profile__leaderboards',
             )
 
             .all().order_by('game_time')
@@ -466,8 +462,44 @@ class OLDMatchView(viewsets.ModelViewSet):
 class AutoMatch(viewsets.ViewSet):
     permission_classes = (permissions.AllowAny,)
 
+
     def create(self, request):
-        services.match.create(request.user, request.data)
+        cache = {}
+        #services.match.create(request.user, request.data)
+        # TODO: Process signal and move code after viability
+        data = request.data
+        print(data.get('players'))
+        players = [
+            utils.fetch_or_create_profile(p['handle'], cache)
+            for p in data.get('players', [])
+        ]
+
+        # Find streamers. A bit harder with all the relationships.
+
+        users = [p.discord_users.all() for p in players]
+        users = [u for sublist in users for u in sublist]
+
+        stream_container = []
+        streamers = models.TwitchStream.objects.filter(active=True, user__in=users)
+        for s in streamers.all():
+            for p in players:
+                if s.user in p.discord_users.all():
+                    stream_container.append({
+                        'profile': serializers.SC2ProfileSerializer(p).data,
+                        'stream': serializers.TwitchStreamSerializer(s).data,
+                    })
+        result = {
+            'players': serializers.SC2ProfileSerializer(players, many=True).data,
+            'streamers': stream_container
+        }
+        print(result)
+        print([p.keys() for p in result['players']])
+        print(json.dumps(result))
+        import ws
+        ws.send_notification(ws.types.NEW_MATCH_STREAM, result)
+
+
+
         return Response(status=status.HTTP_200_OK)
 
     @action(methods=['POST'], detail=False)
@@ -608,14 +640,14 @@ class TeamView(viewsets.ModelViewSet):
         .Team
         .objects
         .prefetch_related(
-            'profiles__leaderboard'
+            'profiles__leaderboards'
         )
         .annotate(players=StringAgg(
             'profiles__name',
             delimiter=', '
         ))
         .annotate(team_elo=Avg(
-            'profiles__leaderboard__elo'
+            'profiles__leaderboards__elo'
         ))
         .annotate(games=Count(
             'matchteam'

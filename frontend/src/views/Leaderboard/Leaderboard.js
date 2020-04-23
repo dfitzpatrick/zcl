@@ -16,6 +16,7 @@ import Card from "components/Card/Card.js";
 import CardBody from "components/Card/CardBody.js";
 import CardIcon from "components/Card/CardIcon.js";
 import CardHeader from "components/Card/CardHeader.js";
+import CustomDropdown from "components/CustomDropdown/CustomDropdown"
 
 import {goodTimeDiff} from "../../helpers/dates"
 
@@ -30,8 +31,9 @@ const styles = {
   }
 };
 
-async function getLeaderboards() {
-    const response = await axios.get('/api/leaderboards')
+async function getLeaderboards(mode) {
+
+    const response = await axios.get(`/api/leaderboards/?mode=${mode}`)
     return response.data
 }
 function filterCaseInsensitive(filter, row) {
@@ -44,12 +46,14 @@ function filterCaseInsensitive(filter, row) {
 	);
 }
 
+
 const useStyles = makeStyles(styles);
 
 export default function ReactTables() {
     const [lbData, setLbData] = React.useState([])
+    const [mode, setMode] = React.useState("2v2v2v2")
     React.useEffect(() => {
-        getLeaderboards().then(data => {
+        getLeaderboards(mode).then(data => {
             setLbData(data)
         })
     }, [])
@@ -57,7 +61,7 @@ export default function ReactTables() {
     lbData.map((prop, key) => {
       return {
         id: prop.id,
-        name: prop.toon.name,
+        name: prop.profile.name,
         position: prop.wins,
         office: prop.losses,
         age: prop.elo,
@@ -141,7 +145,26 @@ export default function ReactTables() {
     })
   );
   const classes = useStyles();
-  return (
+  const handleModeChoice = (value) => {
+    setMode(value)
+    getLeaderboards(value).then(data => {
+      setLbData(data)
+    })
+
+  }
+  return (<>
+    <CustomDropdown
+    onClick={handleModeChoice}
+    buttonText={mode}
+    dropdownList={[
+      "2v2v2v2",
+      "3v3v3v3",
+      "1v1v1v1",
+      "1v1",
+      "2v2",
+    ]}
+    buttonProps={{color: "primary"}}
+   />
     <GridContainer>
       <GridItem xs={12}>
         <Card>
@@ -163,7 +186,7 @@ export default function ReactTables() {
                 },
                 {
                   Header: "Name",
-                  accessor: "toon.name"
+                  accessor: "profile.name"
                 },
                 {
                     Header: "ELO",
@@ -204,5 +227,5 @@ export default function ReactTables() {
         </Card>
       </GridItem>
     </GridContainer>
-  );
+  </>);
 }

@@ -8,7 +8,7 @@ import CardIcon from "components/Card/CardIcon.js";
 import Button from "components/CustomButtons/Button.js";
 import CardHeader from "components/Card/CardHeader.js";
 import { cardTitle } from "assets/jss/material-dashboard-pro-react.js";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles, useTheme } from "@material-ui/core/styles";
 import axios from "axios";
 import moment from 'moment';
 
@@ -26,7 +26,41 @@ import tankIcon from "assets/img/unitIcons/tank.png"
 import bunkerIcon from "assets/img/unitIcons/bunker.png"
 import Timeline from "components/Timeline/Timeline.js";
 import NavPills from "components/NavPills/NavPills.js";
-import { dataTable } from 'variables/general';
+import PropTypes from 'prop-types';
+import SwipeableViews from 'react-swipeable-views';
+import AppBar from '@material-ui/core/AppBar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import Typography from '@material-ui/core/Typography';
+import Box from '@material-ui/core/Box';
+
+function TabPanel(props) {
+    const { children, value, index, ...other } = props;
+
+    return (
+        <Typography
+            component="div"
+            role="tabpanel"
+            hidden={value !== index}
+            id={`full-width-tabpanel-${index}`}
+            aria-labelledby={`full-width-tab-${index}`}
+            {...other}
+        >
+            {value === index && <Box p={3}>{children}</Box>}
+        </Typography>
+    );
+}
+TabPanel.propTypes = {
+    children: PropTypes.node,
+    index: PropTypes.any.isRequired,
+    value: PropTypes.any.isRequired,
+};
+function a11yProps(index) {
+    return {
+        id: `full-width-tab-${index}`,
+        'aria-controls': `full-width-tabpanel-${index}`,
+    };
+}
 
 const styles = {
     cardIconTitle: {
@@ -70,7 +104,7 @@ async function getLeaderboards(teams) {
     }
 
     const filter = boardIds.join()
-    const response = await axios.get(`/api/leaderboards/?id=${filter}`)
+    const response = await axios.get(`/api/leaderboards/?id=${filter}&mode=2v2v2v2`)
     return response.data
 }
 
@@ -137,27 +171,37 @@ const story2 = [{
     title: "Some Title",
     titleColor: "danger",
     body: (
-      <p>
-        Wifey made the best Father{"'"}s Day meal ever. So thankful so happy so
+        <p>
+            Wifey made the best Father{"'"}s Day meal ever. So thankful so happy so
         blessed. Thank you for making my family We just had fun with the
         “future” theme !!! It was a fun night all together ... The always rude
         Kanye Show at 2am Sold Out Famous viewing @ Figueroa and 12th in
         downtown.
-      </p>
+        </p>
     ),
     footerTitle: "11 hours ago via Twitter"
-  },]
+},]
 
 
 
 export default function MatchDetail(props) {
-
+    const theme = useTheme()
     const [data, setData] = React.useState(initialChartState)
     const [match, setMatch] = React.useState(initialState)
     const [leaderboardData, setLeaderboardData] = React.useState([])
 
     const classes = useStyles()
     const id = useParams()
+
+    const [value, setValue] = React.useState(0);
+
+    const handleChange = (event, newValue) => {
+        setValue(newValue);
+    };
+
+    const handleChangeIndex = (index) => {
+        setValue(index);
+    };
 
     React.useEffect(() => {
         const { id } = props.match.params
@@ -183,12 +227,12 @@ export default function MatchDetail(props) {
                         <CardHeader color="primary" icon>
                             <CardIcon color="danger">
                                 LB
-            </CardIcon>
+                            </CardIcon>
                             <h4 className={classes.cardIconTitle}>Matches</h4>
                         </CardHeader>
                         <CardBody>
                             Loading Data
-        </CardBody>
+                        </CardBody>
                     </Card>
                 </GridItem>
             </GridContainer>
@@ -215,7 +259,7 @@ export default function MatchDetail(props) {
                     color: "success",
                     icon: tankIcon,
                 },
-                bunker_started: 
+                bunker_started:
                 {
                     title: "Builds a Bunker",
                     color: "success",
@@ -237,22 +281,20 @@ export default function MatchDetail(props) {
                     icon: tankIcon,
                 },
             }
-            
+
             const obj = key_names.hasOwnProperty(me.key) ? key_names[me.key] : defaults
-          return ({
-              inverted: obj.color == 'danger',
-              badgeColor: obj.color,
-              badgeIcon: obj.icon,
-              title: me.profile.name + " " + obj.title,
-              titleColor: obj.color,
-              body: me.description,
-              footerTitle: moment.utc(me.game_time*1000).format("H:mm:ss")
-          })
+            return ({
+                inverted: obj.color == 'danger',
+                badgeColor: obj.color,
+                badgeIcon: obj.icon,
+                title: me.profile.name + " " + obj.title,
+                titleColor: obj.color,
+                body: me.description,
+                footerTitle: moment.utc(me.game_time * 1000).format("H:mm:ss")
+            })
         })
         return (
             <div>
-                
-
                 <GridContainer>
                     <GridItem xs={12}>
                         <Card>
@@ -266,120 +308,114 @@ export default function MatchDetail(props) {
                                 <GridContainer>
                                     <GridItem xs={12} sm={6} md={6}>
 
-                                    
-                                    <GridContainer>
-                                        <GridItem className={classes.detailsHeader} >
-                                            Match Date:
+
+                                        <GridContainer>
+                                            <GridItem className={classes.detailsHeader} >
+                                                Match Date:
                                         </GridItem>
-                                        <GridItem className={classes.detailsValue}>
-                                           {moment(match.data.match_date).format("dddd, MMMM Do YYYY, h:mm:ss a")}
-                                        </GridItem>
-                                    </GridContainer>
+                                            <GridItem className={classes.detailsValue}>
+                                                {moment(match.data.match_date).format("dddd, MMMM Do YYYY, h:mm:ss a")}
+                                            </GridItem>
+                                        </GridContainer>
 
-                                    <GridContainer>
-                                        <GridItem className={classes.detailsHeader}>Players:</GridItem>
-                                        <GridItem className={classes.detailsValue}>{match.data.players}</GridItem>
+                                        <GridContainer>
+                                            <GridItem className={classes.detailsHeader}>Players:</GridItem>
+                                            <GridItem className={classes.detailsValue}>{match.data.players}</GridItem>
 
-                                    </GridContainer>
+                                        </GridContainer>
 
-                                    <GridContainer>
-                                        <GridItem className={classes.detailsHeader}>Game Length:</GridItem>
-                                        <GridItem className={classes.detailsValue}>{moment.utc(match.data.game_length * 1000).format('HH:mm:ss')}</GridItem>
-                                    </GridContainer>
-                               
-                                </GridItem>
-                                <GridItem xs={12} sm={6} md={6}>
+                                        <GridContainer>
+                                            <GridItem className={classes.detailsHeader}>Game Length:</GridItem>
+                                            <GridItem className={classes.detailsValue}>{moment.utc(match.data.game_length * 1000).format('HH:mm:ss')}</GridItem>
+                                        </GridContainer>
 
-                                    <GridContainer>
-                                        <GridItem className={classes.detailsHeader}>Winners</GridItem>
-                                        <GridItem className={classes.detailsValue}>{match.data.winners}</GridItem>
-                                    </GridContainer>
-                                    <GridContainer>
-                                        <GridItem className={classes.detailsHeader}>League</GridItem>
-                                        <GridItem className={classes.detailsValue}>{match.data.league || "Public Game"}</GridItem>
+                                    </GridItem>
+                                    <GridItem xs={12} sm={6} md={6}>
 
-                                    </GridContainer>
-                                    <GridContainer>
-                                        <GridItem className={classes.detailsHeader}>Season</GridItem>
-                                        <GridItem className={classes.detailsValue}>{match.data.season || "No Season"}</GridItem>
-                                    </GridContainer>
-                                </GridItem>
+                                        <GridContainer>
+                                            <GridItem className={classes.detailsHeader}>Winners</GridItem>
+                                            <GridItem className={classes.detailsValue}>{match.data.winners}</GridItem>
+                                        </GridContainer>
+                                        <GridContainer>
+                                            <GridItem className={classes.detailsHeader}>League</GridItem>
+                                            <GridItem className={classes.detailsValue}>{match.data.league || "Public Game"}</GridItem>
+
+                                        </GridContainer>
+                                        <GridContainer>
+                                            <GridItem className={classes.detailsHeader}>Season</GridItem>
+                                            <GridItem className={classes.detailsValue}>{match.data.season || "No Season"}</GridItem>
+                                        </GridContainer>
+                                    </GridItem>
                                 </GridContainer>
                                 <Button color="info" round href={`https://zcleagues.s3-us-west-1.amazonaws.com/replays/${match.data.id}.SC2Replay`}><CloudDownloadIcon /> Download Replay</Button>
                             </CardBody>
                         </Card>
                     </GridItem>
                 </GridContainer>
-                <hr />
-                <NavPills
-                color="warning"
-                tabs={[
-
-                {
-                    tabButton: "Roster",
-                    tabContent: (
-                        <GridContainer>
-                            <GridItem xs={12} sm={7} md={7}>
-                                <Heading title="Roster" />
-                                <GridContainer>
-                                    {match.data.teams.sort(teamSort).map(t => {
-                                        return (<>
-                                            <GridItem xs={12} sm={6} md={6}>
-                                                <RosterBadge team={t} leaderboardData={leaderboardData} />
-                                            </GridItem>
-                                        </>)
-                                    })}
-
-
-
-                                </GridContainer>
-                            </GridItem>
-                            
-                        </GridContainer>
-                    )
-                },
-                {
-                    tabButton: "Feed Bar",
-                    tabContent: (
-                        <GridContainer xs={12} sm={12} md={12}>
-                            <GridItem xs={12} sm={12} md={12}>
-                                <Heading title="Feed Summary" />
-                                    <FeedChart data={data.feed} />
-                            </GridItem>
-                        </GridContainer>
-
-                    )
-                },
-                {
-                    tabButton: "Charts",
-                    tabContent: <StatsTrend data={data.time_series} />,
-                  },
-                  {
-                      tabButton: "Upgrades",
-                      tabContent:  <UpgradeViewer data={data.upgrades} />
-                  },
-                  {
-                      tabButton: "Unit Statistics",
-                      tabContent: <UnitStatistics data={data.unit_stats} />  
-                  },
-                  {
-                    tabButton: "Events",
-                    tabContent: <Timeline stories={stories} />,
-                  },
-                  
+                <AppBar position="static" color="default">
+                    <Tabs
+                        value={value}
+                        onChange={handleChange}
+                        indicatorColor="primary"
+                        textColor="primary"
+                        variant="scrollable "
+                        aria-label="full width tabs example"
+                        scrollButtons="auto"
+                    >
+                        <Tab label="Roster" {...a11yProps(0)} />
+                        <Tab label="Feed Chart" {...a11yProps(1)} />
+                        <Tab label="Time Charts" {...a11yProps(2)} />
+                        <Tab label="Upgrades" {...a11yProps(3)} />
+                        <Tab label="Unit Stats" {...a11yProps(4)} />
+                        <Tab label="Timeline" {...a11yProps(4)} />
                  
-                ]}
-                />
-                
-                
-         
+                    </Tabs>
+                </AppBar>
+                    <TabPanel value={value} index={0} dir={theme.direction}>
+                    <GridContainer>
+                                            <GridItem xs={12} sm={12} md={12}>
+                                                <Heading title="Roster" />
+                                                <GridContainer>
+                                                    {match.data.teams.sort(teamSort).map(t => {
+                                                        return (<>
+                                                            <GridItem xs={12} sm={6} md={6}>
+                                                                <RosterBadge team={t} leaderboardData={leaderboardData} />
+                                                            </GridItem>
+                                                        </>)
+                                                    })}
 
-                
 
-              
-         
-                
-     
+
+                                                </GridContainer>
+                                            </GridItem>
+
+                                        </GridContainer>
+        </TabPanel>
+                    <TabPanel value={value} index={1} dir={theme.direction}>
+                    <FeedChart data={data.feed} />
+        </TabPanel>
+                    <TabPanel value={value} index={2} dir={theme.direction}>
+                    <StatsTrend data={data.time_series} />
+        </TabPanel>
+        <TabPanel value={value} index={3} dir={theme.direction}>
+                    <UpgradeViewer data={data.upgrades} />
+        </TabPanel>
+        <TabPanel value={value} index={4} dir={theme.direction}>
+        <UnitStatistics data={data.unit_stats} />
+        </TabPanel>
+        <TabPanel value={value} index={5} dir={theme.direction}>
+        <Timeline stories={stories} />,
+        </TabPanel>
+       
+        
+
+
+
+
+
+
+
+
 
             </div>
 

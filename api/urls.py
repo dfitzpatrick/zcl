@@ -2,6 +2,7 @@ from django.conf.urls import include, url
 from rest_framework import routers
 
 from accounts import views as account_views
+from .banks.views import BankAPIView
 from . import views
 
 router = routers.DefaultRouter()
@@ -28,6 +29,7 @@ urlpatterns = [
     url('^chartpoints/(?P<match_id>\d+)/$', views.ChartPointView.as_view()),
     url('^charts/(?P<match_id>\d+)/$', views.ChartsView.as_view()),
     url('test/', views.Insights.as_view()),
+    url('^banks/$', BankAPIView.as_view())
 
 
 

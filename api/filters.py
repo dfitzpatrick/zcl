@@ -105,6 +105,7 @@ class MatchFilter(filters.FilterSet):
 
 class LeaderboardFilter(filters.FilterSet):
     id = LeaderboardListFilter(field_name='id')
+    mode = filters.CharFilter(field_name='mode')
 
     class Meta:
         model = api_models.Leaderboard

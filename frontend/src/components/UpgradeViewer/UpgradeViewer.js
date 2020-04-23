@@ -36,7 +36,6 @@ function makeUpgradeArraySameLength(data) {
 
 function getUpgradeValue(player) {
     const sumUp = (n) => [...Array(n).keys()].map(v => (v + 1) * 25).reduce((a, b) => a + b, 0)
-    /*
     return (
         sumUp(player.MarineArmor) +
         sumUp(player.MarineWeapons) +
@@ -44,7 +43,6 @@ function getUpgradeValue(player) {
         sumUp(player.MarineLifeRegeneration) +
         sumUp(player.MarineMovespeed)
     )
-    */
    return 0
 }
 const initalDataSelection = [

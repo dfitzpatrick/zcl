@@ -75,6 +75,7 @@ export default function NavPills(props) {
         index={active}
         onChangeIndex={handleChangeIndex}
         style={{ overflowY: "hidden" }}
+
       >
         {tabs.map((prop, key) => {
           return (
