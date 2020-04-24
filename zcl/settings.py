@@ -40,6 +40,7 @@ USE_TZ = True
 DATASTORE AND TASKS
 -------------------------------------------------------------------------------
 """
+CONN_MAX_AGE = 0  # Fixes Daphne not closing connections
 REDIS_URL = config('REDIS_URL', default='redis://redis:6379/0')
 CELERY_TASK_EAGER_PROPAGATES = True
 CELERY_BROKER_URL = REDIS_URL
@@ -284,6 +285,8 @@ TEMPLATES = [
         },
     },
 ]
+
+
 if os.environ.get('DATABASE_URL'):
     db_from_env = dj_database_url.config(env=os.environ['DATABASE_URL'])
     DATABASES['default'].update(db_from_env)
