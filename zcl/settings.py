@@ -287,10 +287,11 @@ TEMPLATES = [
 ]
 
 
-if os.environ.get('DATABASE_URL'):
-    db_from_env = dj_database_url.config(env=os.environ['DATABASE_URL'])
-    DATABASES['default'].update(db_from_env)
 
+db_from_env = dj_database_url.config()
+DATABASES['default'].update(db_from_env)
+
+# Don't use databases as this forces CONN_MAX_AGE = 600 and does not close connections.
 django_heroku.settings(locals(), databases=False)
 
 
