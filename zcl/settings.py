@@ -291,7 +291,7 @@ if os.environ.get('DATABASE_URL'):
     db_from_env = dj_database_url.config(env=os.environ['DATABASE_URL'])
     DATABASES['default'].update(db_from_env)
 
-django_heroku.settings(locals(), databases=True)
+django_heroku.settings(locals(), databases=False)
 
 
 
