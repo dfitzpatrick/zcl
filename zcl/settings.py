@@ -147,7 +147,8 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
-    ]
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination'
 }
 
 AUTHENTICATION_BACKENDS = (
@@ -283,9 +284,11 @@ TEMPLATES = [
         },
     },
 ]
-db_from_env = dj_database_url.config()
-DATABASES['default'].update(db_from_env)
-django_heroku.settings(locals(), databases=False)
+if os.environ.get('DATABASE_URL'):
+    db_from_env = dj_database_url.config(env=os.environ['DATABASE_URL'])
+    DATABASES['default'].update(db_from_env)
+
+django_heroku.settings(locals(), databases=True)
 
 
 

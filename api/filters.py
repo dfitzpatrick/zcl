@@ -94,7 +94,7 @@ class LeaderboardListFilter(filters.Filter):
 class MatchFilter(filters.FilterSet):
     player = MatchHasPlayer()
     anyplayers = MatchHasAnyPlayers()
-    limit = filters.Filter(field_name='id', method=limit_filter)
+    max = filters.Filter(field_name='id', method=limit_filter)
 
     class Meta:
         model = api_models.Match

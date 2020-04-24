@@ -40,12 +40,37 @@ function filterCaseInsensitive(filter, row) {
 	);
 }
 
+
 const useStyles = makeStyles(styles);
 
 export default function ReactTables(props) {
+  const classes = useStyles();
+  const history = useHistory()
+  
+
 
     const [matches, setMatches] = React.useState([])
-    const history = useHistory()
+    const [pageSize, setPageSize] = React.useState(10)
+    const [page, setPage] = React.useState(0)
+    const [pages, setPages] = React.useState(null)
+    const [loading, setLoading] = React.useState(true)
+
+
+    const fetchMatches = (state, instance) => {
+      setLoading(true)
+      const url = `/api/matches/`
+      const offset = state.page * state.pageSize
+      const target = `${url}?limit=${state.pageSize}&offset=${offset}`
+      axios.get(target).then(
+        res => {
+          const pages = Math.round(res.data.count / state.pageSize)
+          console.log(res.data)
+          setMatches(res.data.results)
+          setPages(pages)
+          setLoading(false)
+        }
+      )
+    }
 
     const addRowClick = (state, row) => {
       if (row && row.row) {
@@ -58,16 +83,6 @@ export default function ReactTables(props) {
       }
       return {}
     }
-    
-    React.useEffect(() => {
-      getMatches().then(data => {
-          setMatches(data)
-      })
-      
-      
-    }, [])
-
-  const classes = useStyles();
   return (
     <GridContainer>
       <GridItem xs={12}>
@@ -80,8 +95,13 @@ export default function ReactTables(props) {
           </CardHeader>
           <CardBody>
             <ReactTable
+             manual
               data={matches}
-              filterable
+              pages={pages}
+              loading={loading}
+              onFetchData={fetchMatches}
+              defaultPageSize={pageSize}
+             
               defaultFilterMethod={filterCaseInsensitive}
               columns={[
                 {
@@ -112,7 +132,7 @@ export default function ReactTables(props) {
                 },
               ]}
               getTrProps={(state, rowInfo) => addRowClick(state, rowInfo)}
-              defaultPageSize={10}
+            
               showPaginationTop
               showPaginationBottom={false}
               className="-striped -highlight"
