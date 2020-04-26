@@ -43,9 +43,11 @@ def subscription_update(pk: int, hub_mode: str, refresh: bool = False, **kwargs)
         'hub.topic': sub.topic,
         'hub.callback': callback_url,
     }
-    headers = {
-        'Content-Type': 'application/json'
-    }
+    user_headers = kwargs.get('headers', {})
+    if 'Content-Type' not in user_headers.keys():
+        user_headers['Content-Type'] = 'application/json'
+        kwargs['headers'] = user_headers
+
     # Should be ignored per WebSub standard. Better to be explicit though.
     if hub_mode == "subscribe":
         payload['hub.lease_seconds'] = kwargs.get('lease_seconds') or 864000

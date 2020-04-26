@@ -75,6 +75,16 @@ class DiscordToLocalToken(APIView):
 
         return Response({'error': 'unverified discord account'}, status=401)
 
+class me(APIView):
+    permission_classes = (IsOwner,)
+
+    def get(self, request):
+        user: DiscordUser = request.user
+        print(user.id)
+        data = serializers.DiscordUserSerializer(user).data
+        print(data)
+        return Response(data, status=status.HTTP_200_OK)
+
 
 def logout(request):
     """

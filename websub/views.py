@@ -47,6 +47,8 @@ class WebSubView(APIView):
         -------
         HttpResponse
         """
+        log.debug('got request from webhook')
+        log.debug(request)
         required = ['hub.topic', 'hub.mode', 'hub.challenge']
         topic = request.GET.get('hub.topic')
         mode = request.GET.get('hub.mode')

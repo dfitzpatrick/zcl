@@ -40,7 +40,7 @@ USE_TZ = True
 DATASTORE AND TASKS
 -------------------------------------------------------------------------------
 """
-CONN_MAX_AGE = 0  # Fixes Daphne not closing connections
+CONN_MAX_AGE = 600  # Fixes Daphne not closing connections
 REDIS_URL = config('REDIS_URL', default='redis://redis:6379/0')
 CELERY_TASK_EAGER_PROPAGATES = True
 CELERY_BROKER_URL = REDIS_URL

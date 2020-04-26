@@ -467,12 +467,16 @@ class AutoMatch(viewsets.ViewSet):
         cache = {}
         #services.match.create(request.user, request.data)
         # TODO: Process signal and move code after viability
-        data = request.data
-        print(data.get('players'))
+        data = request.data.get('data', {})
+        if data.get('type') != "match_start":
+            return
+        log.debug(f'Received AutoMatch Payload: {data}')
+        players_and_observers = data.get('players', []) + data.get('observers', [])
         players = [
             utils.fetch_or_create_profile(p['handle'], cache)
-            for p in data.get('players', [])
+            for p in players_and_observers
         ]
+
 
         # Find streamers. A bit harder with all the relationships.
 
@@ -483,7 +487,10 @@ class AutoMatch(viewsets.ViewSet):
         streamers = models.TwitchStream.objects.filter(active=True, user__in=users)
         for s in streamers.all():
             for p in players:
+                user_choices = ', '.join([u.username for u in p.discord_users.all()])
+                print(f"is {s.user.username} in {user_choices}")
                 if s.user in p.discord_users.all():
+                    print(f"Yes {s.user.username}")
                     stream_container.append({
                         'profile': serializers.SC2ProfileSerializer(p).data,
                         'stream': serializers.TwitchStreamSerializer(s).data,
@@ -492,9 +499,7 @@ class AutoMatch(viewsets.ViewSet):
             'players': serializers.SC2ProfileSerializer(players, many=True).data,
             'streamers': stream_container
         }
-        print(result)
-        print([p.keys() for p in result['players']])
-        print(json.dumps(result))
+
         import ws
         ws.send_notification(ws.types.NEW_MATCH_STREAM, result)
 

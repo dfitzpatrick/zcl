@@ -8,6 +8,7 @@ from . import views
 
 urlpatterns = [
     path('exchange/', views.DiscordToLocalToken.as_view(), name='exchange'),
+    path('me/', views.me.as_view(), name="me"),
     path('logout', views.logout, name='logout'),
     path('login',
         DiscordAuthView.as_view(AuthSettings(settings.OAUTH2_DISCORD), 'discord-auth'),
