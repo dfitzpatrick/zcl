@@ -488,9 +488,7 @@ class AutoMatch(viewsets.ViewSet):
         for s in streamers.all():
             for p in players:
                 user_choices = ', '.join([u.username for u in p.discord_users.all()])
-                print(f"is {s.user.username} in {user_choices}")
                 if s.user in p.discord_users.all():
-                    print(f"Yes {s.user.username}")
                     stream_container.append({
                         'profile': serializers.SC2ProfileSerializer(p).data,
                         'stream': serializers.TwitchStreamSerializer(s).data,

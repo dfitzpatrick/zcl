@@ -50,6 +50,7 @@ class TwitchAuthView(LoginRequiredMixin, AuthView):
             defaults={
                 'social_account': sa,
                 'username': username,
+                'user': request.user,
 
             }
         )

@@ -19,16 +19,12 @@ def catch_exception(f):
 
 class NotificationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        print("in connect")
         # Join room group
-        print("joining")
         await self.channel_layer.group_add('notifications',self.channel_name)
-        print("accepting")
         await self.accept()
 
     async def disconnect(self, close_code):
         # Leave room group
-        print("wtf")
         await self.channel_layer.group_discard(
             self.group,
             self.channel_name
@@ -37,7 +33,6 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data=None, bytes_data=None):
         try:
             j = json.loads(text_data)
-            print("FIRE")
             await self.channel_layer.group_send('mytest', j)
         except json.JSONDecodeError:
             print("Error JSON")
@@ -54,4 +49,10 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=payload)
 
     async def new_match_stream(self, payload):
+        return await self.default_handler(payload)
+
+    async def stream_start(self, payload):
+        return await self.default_handler(payload)
+
+    async def stream_stop(self, payload):
         return await self.default_handler(payload)

@@ -42,7 +42,7 @@ def stream_webhook_update(sender: WebSubView, webhook_name, uuid, data, **kwargs
             'user_id': ts.user.id,
             'data': data,
         }
-        ws.send_notification(payload)
+        ws.send_notification(type, payload)
     except TwitchStream.DoesNotExist:
         log.info(f"Could not get TwitchStream Instance with {uuid}")
         pass
