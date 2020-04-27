@@ -35,10 +35,10 @@ class BankAPIView(views.APIView):
         players = pb.last_game.get('players', {})
         for id, stats in players.items():
             profile = utils.fetch_or_create_profile(id, profile_cache)
-            wins = int(obj.get('wins', 0))
-            games = int(obj.get('games', 0))
-            losses = int(obj.get('losses', 0))
-            elo = float(obj.get('elo', 0))
+            wins = int(stats.get('wins', 0))
+            games = int(stats.get('games', 0))
+            losses = int(stats.get('losses', 0))
+            elo = float(stats.get('elo', 0))
             lb, created = Leaderboard.objects.get_or_create(
                 profile=profile,
                 mode=mode,
