@@ -192,7 +192,13 @@ class Match(models.Model):
     # Draw support
     draw = models.BooleanField(default=False)
 
-    details = JSONField(null=True, default=dict)
+    # Extra field in case a match with a league and season need to be excluded
+    ranked = models.BooleanField(default=False)
+
+    # To filter out old ZC4 Matches or those without replays. Will probably migrate
+    # to just exclude on replay later.
+    legacy = models.BooleanField(default=False)
+
 
     def __str__(self):
         """

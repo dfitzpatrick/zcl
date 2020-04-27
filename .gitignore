@@ -4,3 +4,7 @@ staticfiles/
 node_modules/
 __pycache__/
 *.py[cod]
+test.py
+three.SC2Replay
+*.pickle
+helpers.py
