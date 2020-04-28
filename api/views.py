@@ -554,6 +554,13 @@ class CurrentUser(APIView):
 class ReplayUpload(APIView):
     parser_classes = (parsers.FileUploadParser,)
 
+    def match_exists_with_replay(self, id):
+        try:
+            match = models.Match.objects.get(id=id)
+            return match.replay != None
+        except models.Match.DoesNotExist:
+            return False
+
 
     def _process(self, request):
         user = request.user
@@ -563,8 +570,7 @@ class ReplayUpload(APIView):
             game_id = tmp_replay.game_id
             file.name = str(game_id)
 
-            if models.Match.objects.filter(id=game_id).count() > 0:
-                log.debug(f"Uploaded Match Exists ({game_id})")
+            if self.match_exists_with_replay(game_id):
                 return
 
             replay = models.Replay.objects.create(

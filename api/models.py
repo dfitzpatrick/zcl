@@ -285,6 +285,9 @@ class League(models.Model):
     name = models.CharField(max_length=300)
     description = models.TextField(blank=True)
 
+    def __str__(self):
+        return f"[id={self.id}, name={self.name}]"
+
     class Meta:
         unique_together = ('guild', 'name',)
 
@@ -297,6 +300,9 @@ class Season(models.Model):
 
     name = models.CharField(max_length=300)
     description = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"[id={self.id}, name={self.name}, league={self.league.name}]"
 
     class Meta:
         unique_together = ('league', 'name',)

@@ -31,7 +31,7 @@ services:
       - 6379:6379
   celery_worker:
     <<: *project
-    command: celery -A zcl worker --loglevel=info -c 4
+    command: celery -A zcl worker --loglevel=info --autoscale=12,3
     ports: []
     environment:
       - C_FORCE_ROOT=true

@@ -93,10 +93,18 @@ def do_parse(replay_model, replay: StreamParser):
         game_id=replay.game_id,
     )
     match.match_date = replay.game_time
+    match.legacy = False
     match.save()
     if not match_created:
         # Re-parse. Clear out any match events or anything that could have different lengths
         match.game_events.all().delete()
+        match.teams.all().delete()
+        match.rosters.all().delete()
+        match.segments.all().delete()
+        match.unit_stats.all().delete()
+        match.match_winners.all().delete()
+        match.matchteam_set.all().delete()
+        match.match_losers.all().delete()
 
     # Create team objects
     for t in replay.teams:
