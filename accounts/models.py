@@ -86,7 +86,27 @@ class SocialAccount(models.Model):
 
 
 
+class AppToken(models.Model):
+    """
+    Represents App Tokens at the application level, and not the user.
+    """
+    created = models.DateTimeField(auto_created=True, auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    provider = models.CharField(max_length=50, unique=True)
+    extra_data = JSONField(default=dict)
 
+    @property
+    def data(self):
+        """
+        Annotates the extra data with expires_at
+        Returns
+        -------
 
+        """
+        expires_in = self.extra_data.get('expires_in', 0)
+        expires_at = self.updated + datetime.timedelta(seconds=expires_in)
+        result = self.extra_data
+        result['expires_at'] = expires_at
+        return result
 
 

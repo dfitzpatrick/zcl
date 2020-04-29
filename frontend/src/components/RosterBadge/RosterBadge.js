@@ -46,10 +46,15 @@ function getPositionAbbreviation(n) {
 }
 function findLeaderboardById(data, id) {
     for (const lb of data) {
-        if (lb.hasOwnProperty('id')) {
-            if (lb.id == id) {
-                return lb
+        if (lb.hasOwnProperty('profile')) {
+            const profile = lb.profile
+            if (profile.hasOwnProperty('id')) {
+                if (profile.id == id) {
+                    return lb
+                }
+
             }
+            
         }
     }
     return null
@@ -83,7 +88,7 @@ export default function RosterBadge(props) {
             } else {
                return (<>
                 <GridItem>#{lb.rank} <small>RANK</small></GridItem>
-                <GridItem>{lb.elo} <small>ELO</small></GridItem>
+                <GridItem>{parseFloat(lb.elo).toFixed(0)} <small>ELO</small></GridItem>
                 <GridItem>{lb.wins} <small>WINS</small></GridItem>
                 <GridItem>{lb.losses} <small>LOSSES</small></GridItem>
                 <GridItem>{lb.win_rate}% <small>WIN RATE</small></GridItem>
@@ -106,12 +111,12 @@ export default function RosterBadge(props) {
                             
                         </GridItem>
                         <GridItem>
-                            <h4 className={classes.cardIconTitle}>{p.sc2_profile.name} </h4>
+                            <h4 className={classes.cardIconTitle}>{p.sc2_profile.name} </h4><small>(Laning {p.lane.name})</small>
                         </GridItem>
                         </GridContainer>
                         
                         <GridContainer>
-                            {lbStats(p.sc2_profile.leaderboard)}
+                            {lbStats(p.sc2_profile.id)}
                         </GridContainer>
                     <hr />
         </>)

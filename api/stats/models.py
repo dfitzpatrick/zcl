@@ -51,7 +51,7 @@ class GameEvent(WithTimeStamp):
 
 
     class Meta:
-        unique_together = ('key', 'match', 'profile', 'game_time')
+        unique_together = ('key', 'match', 'profile', 'opposing_profile', 'game_time')
 
 
 class ChartPoints(WithTimeStamp):

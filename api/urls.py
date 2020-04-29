@@ -4,6 +4,8 @@ from rest_framework import routers
 from accounts import views as account_views
 from .banks.views import BankAPIView
 from . import views
+from .standings.views import Standings
+
 
 router = routers.DefaultRouter()
 router.register('users', views.DiscordUserView)
@@ -29,7 +31,8 @@ urlpatterns = [
     url('^chartpoints/(?P<match_id>\d+)/$', views.ChartPointView.as_view()),
     url('^charts/(?P<match_id>\d+)/$', views.ChartsView.as_view()),
     url('test/', views.Insights.as_view()),
-    url('^banks/$', BankAPIView.as_view())
+    url('^banks/$', BankAPIView.as_view()),
+    url('standings', Standings.as_view(), name='standings')
 
 
 

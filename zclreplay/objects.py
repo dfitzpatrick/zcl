@@ -488,8 +488,11 @@ b'SupplyDepot'
         ref = player if player is not None else self.profile
         if self.totals.get(ref) is None:
             self.totals[ref] = collections.defaultdict(dict)
-
+        if self.totals[ref].get(unit) is None:
+            # Fix error for GhostAcademy 4/29/20 DF
+            self.totals[ref][unit] = collections.defaultdict(dict)
         n = self.totals.get(ref, {}).get(unit, {}).get(category, 0)
+
         self.totals[ref][unit][category] = n + 1
         return self.totals[ref][unit][category]
 

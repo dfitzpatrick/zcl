@@ -101,6 +101,18 @@ export default function CustomDropdown(props) {
               {prop}
             </MenuItem>
           );
+        } else if (
+          typeof prop === 'object'
+        ) {
+          return (
+            <MenuItem
+              key={prop.key}
+              onClick={() => handleCloseMenu(prop)}
+              className={dropdownItem}
+            >
+              {prop.name}
+            </MenuItem>
+          );
         }
         return (
           <MenuItem

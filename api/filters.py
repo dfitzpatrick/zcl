@@ -101,11 +101,14 @@ class MatchFilter(filters.FilterSet):
         fields = '__all__'
         exclude = ['details']
 
-
+class StandingsFilter(filters.FilterSet):
+    league = filters.NumberFilter('league')
+    season = filters.NumberFilter('season')
 
 class LeaderboardFilter(filters.FilterSet):
-    id = LeaderboardListFilter(field_name='id')
+    profile_id = LeaderboardListFilter(field_name='profile__id')
     mode = filters.CharFilter(field_name='mode')
+
 
     class Meta:
         model = api_models.Leaderboard

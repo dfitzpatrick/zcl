@@ -190,7 +190,7 @@ class MatchView(viewsets.ModelViewSet):
                 ))
 
                 .order_by('-match_date')
-                .all()
+                .filter(legacy=False)
     )
 
     @action(methods=['GET'], detail=True)
@@ -560,6 +560,8 @@ class ReplayUpload(APIView):
             return match.replay != None
         except models.Match.DoesNotExist:
             return False
+        except models.Replay.DoesNotExist:
+            return False
 
 
     def _process(self, request):
@@ -708,3 +710,4 @@ class Insights(APIView):
             'avg_victim': u.avg_victim,
         }
         return Response(response)
+

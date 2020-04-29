@@ -61,6 +61,8 @@ class SC2Profile(models.Model):
     name = models.CharField(max_length=300)
     profile_url = models.URLField()
     avatar_url = models.CharField(max_length=300, blank=True, null=True)
+    clan_tag = models.CharField(max_length=50, blank=True, default='')
+    clan_name = models.CharField(max_length=300, blank=True, default='')
     discord_users = models.ManyToManyField(DiscordUser, related_name='profiles')
 
     def _parse_id(self, n: int) -> typing.Optional[str]:
@@ -91,6 +93,11 @@ class SC2Profile(models.Model):
 
     def __str__(self):
         return self.__repr__()
+
+    class Meta:
+        verbose_name = 'Profile'
+        verbose_name_plural = 'Profiles'
+        ordering = ('name',)
 
 class Guild(models.Model):
     """
@@ -160,7 +167,7 @@ class Match(models.Model):
     """
     created = models.DateTimeField(auto_created=True, auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    id = models.IntegerField(primary_key=True, unique=True)
+    id = models.CharField(max_length=50, primary_key=True, unique=True)
     # This is used to track from new clients uploading replays what the original date was
     match_date = models.DateTimeField(default=django.utils.timezone.now)
     game_length = models.FloatField(default=0)

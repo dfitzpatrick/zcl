@@ -112,7 +112,7 @@ class SC2ProfileSerializer(serializers.ModelSerializer):
     #discord_users = DiscordUserSerializer(many=True)
     class Meta:
         model = models.SC2Profile
-        fields = ('id', 'created', 'name', 'profile_url', 'avatar_url', 'leaderboards')
+        fields = ('id', 'created', 'name', 'profile_url', 'avatar_url',)
 
 
 class LeaderboardSerializer(serializers.ModelSerializer):
@@ -124,7 +124,7 @@ class LeaderboardSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Leaderboard
-        fields = ('id', 'name', 'rank', 'created', 'updated', 'profile', 'games', 'wins', 'losses', 'elo', 'win_rate', 'mode')
+        fields = ('id', 'mode', 'name', 'rank', 'created', 'updated', 'profile', 'games', 'wins', 'losses', 'elo', 'win_rate', 'mode')
 
 
 

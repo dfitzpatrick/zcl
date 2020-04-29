@@ -64,7 +64,6 @@ export default function ReactTables(props) {
       axios.get(target).then(
         res => {
           const pages = Math.round(res.data.count / state.pageSize)
-          console.log(res.data)
           setMatches(res.data.results)
           setPages(pages)
           setLoading(false)

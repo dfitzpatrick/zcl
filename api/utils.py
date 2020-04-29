@@ -10,6 +10,7 @@ import zclreplay
 from django.conf import settings
 
 
+
 from .models import SC2Profile
 
 def serialize_drf_serializers(obj):
@@ -67,6 +68,7 @@ def fetch_or_create_profile(profile: typing.Union[str, zclreplay.Player], cache:
     -------
     Optional[SC2Profile]. This will return None if the profile attribute is None
     """
+    from api.tasks import get_profile_details
     profile_id = profile # Default to string
 
     if profile_id is None:
@@ -84,8 +86,7 @@ def fetch_or_create_profile(profile: typing.Union[str, zclreplay.Player], cache:
         defaults={'name': 'FOO'}
     )
     if created:
-        obj.name = get_player_name(obj)
-        obj.save()
+        get_profile_details.delay(obj.id)
     cache[profile_id] = obj
     return obj
 

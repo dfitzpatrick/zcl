@@ -95,16 +95,17 @@ async function getLeaderboards(teams) {
     const boardIds = []
     for (const team of teams) {
         for (const r of team.rosters) {
-            const lb = r.sc2_profile.leaderboard
-            if (lb != null) {
-                boardIds.push(lb)
+            const pid = r.sc2_profile.id
+            if (pid != null) {
+                boardIds.push(pid)
             }
         }
 
     }
 
     const filter = boardIds.join()
-    const response = await axios.get(`/api/leaderboards/?id=${filter}&mode=2v2v2v2`)
+    const url = `/api/leaderboards/?profile_id=${filter}&mode=2v2v2v2`
+    const response = await axios.get(url)
     return response.data
 }
 

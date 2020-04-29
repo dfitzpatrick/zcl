@@ -17,7 +17,7 @@ import django_heroku
 BASE SETTINGS
 -------------------------------------------------------------------------------
 """
-ENABLE_TOOLBAR = False
+ENABLE_TOOLBAR = True
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', cast=bool, default=False)
@@ -117,6 +117,9 @@ TWITCH_CLIENT_SECRET = config('TWITCH_CLIENT_SECRET')
 
 DISCORD_CLIENT_ID = config('DISCORD_CLIENT_ID')
 DISCORD_CLIENT_SECRET = config('DISCORD_CLIENT_SECRET')
+
+BLIZZARD_CLIENT_ID = config('BLIZZARD_CLIENT_ID')
+BLIZZARD_CLIENT_SECRET = config('BLIZZARD_CLIENT_SECRET')
 
 OAUTH2_DISCORD = {
     'authorization_url': 'https://discordapp.com/api/oauth2/authorize',

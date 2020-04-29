@@ -52,9 +52,12 @@ const useStyles = makeStyles(styles);
 export default function ReactTables() {
     const [lbData, setLbData] = React.useState([])
     const [mode, setMode] = React.useState("2v2v2v2")
+    const [loading, setLoading] = React.useState(true)
     React.useEffect(() => {
+        setLoading(true)
         getLeaderboards(mode).then(data => {
             setLbData(data)
+            setLoading(false)
         })
     }, [])
     const [data, setData] = React.useState(
@@ -147,8 +150,10 @@ export default function ReactTables() {
   const classes = useStyles();
   const handleModeChoice = (value) => {
     setMode(value)
+    setLoading(true)
     getLeaderboards(value).then(data => {
       setLbData(data)
+      setLoading(false)
     })
 
   }
@@ -178,6 +183,7 @@ export default function ReactTables() {
             <ReactTable
               data={lbData}
               filterable
+              loading={loading}
               defaultFilterMethod={filterCaseInsensitive}
               columns={[
                 {

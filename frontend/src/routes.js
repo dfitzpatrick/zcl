@@ -1,5 +1,6 @@
 
 import Dashboard from "views/Dashboard/Dashboard.js";
+import Standings from "views/Standings/Standings.js"
 import HomePage from "views/Pages/HomePage.js";
 import Leaderboard from "views/Leaderboard/Leaderboard.js"
 import TeamLeaderboard from "views/Leaderboard/TeamLeaderboard.js"
@@ -9,14 +10,6 @@ import Connections from "views/Connections/Connections.js"
 
 var dashRoutes = [
   {
-    path: "/dashboard",
-    name: "Dashboard",
-    rtlName: "لوحة القيادة",
-    icon: DashboardIcon,
-    component: Dashboard,
-    layout: "/portal"
-  },
-  {
     path: "/leaderboard",
     name: "Public Leaderboard",
     rtlName: "لوحة القيادة",
@@ -25,11 +18,11 @@ var dashRoutes = [
     layout: "/portal"
   },
   {
-    path: "/teams",
-    name: "Team Leaderboard",
+    path: "/standings",
+    name: "League Standings",
     rtlName: "لوحة القيادة",
     icon: DashboardIcon,
-    component: TeamLeaderboard,
+    component: Standings,
     layout: "/portal"
   },
   {

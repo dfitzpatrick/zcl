@@ -5,7 +5,7 @@ from channels.layers import get_channel_layer
 import json
 
 import ws.types
-from api.utils import serialize_drf_serializers
+
 CACHE = []
 CACHE_MAX_SIZE = 0
 
