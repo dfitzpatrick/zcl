@@ -44,7 +44,7 @@ class MatchTeamAdmin(admin.ModelAdmin):
                 delimiter=', ')
             )
         )
-
+admin.site.register(models.Game)
 admin.site.register(models.SC2Profile)
 admin.site.register(models.Guild)
 admin.site.register(models.League)
