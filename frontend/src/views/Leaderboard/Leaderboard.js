@@ -187,6 +187,7 @@ export default function ReactTables() {
               defaultFilterMethod={filterCaseInsensitive}
               columns={[
                 {
+                  
                   Header: "Rank",
                   accessor: "rank"
                 },
