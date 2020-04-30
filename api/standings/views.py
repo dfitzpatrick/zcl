@@ -1,12 +1,13 @@
 from decimal import Decimal
 
 from django import http
-from django.db.models import Count, Q, F, DecimalField, Case, When
+from django.db.models import Count, Q, F, DecimalField, Case, When, Value
 from django.db.models.expressions import Window
 from django.db.models.functions import Rank
 from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
 
 from ..models import SC2Profile
 
@@ -103,6 +104,7 @@ class Standings(APIView):
                           default=1,
                           output_field=DecimalField(decimal_places=3, max_digits=5)
                 ),
+
                 adjusted_win_rate=F('rate') * F('win_rate'),
                 rank=rank_window
 

@@ -86,7 +86,7 @@ def fetch_or_create_profile(profile: typing.Union[str, zclreplay.Player], cache:
         defaults={'name': 'FOO'}
     )
     if created:
-        get_profile_details.delay(obj.id)
+        get_profile_details.delay(profile_id)
     cache[profile_id] = obj
     return obj
 
