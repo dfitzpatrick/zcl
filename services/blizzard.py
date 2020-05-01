@@ -47,6 +47,8 @@ class BlizzardAPI:
                     'extra_data': data
                 }
             )
+            print(response, response.status_code, response.text)
+            print(response.headers)
             return obj.data
         return {}
 
