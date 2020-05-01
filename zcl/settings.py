@@ -10,7 +10,7 @@ import os
 import socket
 from decouple import config
 import dj_database_url
-import django_heroku
+#import django_heroku
 
 
 """
@@ -60,10 +60,10 @@ CHANNEL_LAYERS = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'zclpassword',
-        'HOST': 'db' or 'localhost',
+        'NAME': config('DATABASE_NAME'),
+        'USER': config('DATABASE_USER'),
+        'PASSWORD': config('DATABASE_PWD'),
+        'HOST': 'localhost',
         'PORT': 5432
     }
 }
@@ -295,7 +295,7 @@ db_from_env = dj_database_url.config()
 DATABASES['default'].update(db_from_env)
 
 # Don't use databases as this forces CONN_MAX_AGE = 600 and does not close connections.
-django_heroku.settings(locals(), databases=False)
+#django_heroku.settings(locals(), databases=False)
 
 
 
