@@ -1,16 +1,37 @@
 import logging
 
 from django.conf import settings
-from django.db.models.signals import pre_delete, post_delete
+from django.db.models.signals import pre_delete, post_delete, post_save
 from django.dispatch.dispatcher import receiver
 
 from accounts.models import SocialAccount
-from api.models import Replay, TwitchStream
+from api.models import Replay, TwitchStream, SC2Profile
 from websub.models import Subscription
 from websub.signals import webhook_update
 from websub.views import WebSubView
+from api.tasks import get_profile_details
 
 log = logging.getLogger('zcl.api')
+
+
+@receiver(post_save, sender=SC2Profile)
+def profile_get_details(sender, instance, created, **kwargs):
+    """
+    If a new Profile is created when parsing matches, use the Blizzard API
+    to fetch the player details (name, avatar, clan etc) in a celery task.
+    Parameters
+    ----------
+    sender
+    instance
+    created: Was this a newly created instance?
+    kwargs
+
+    Returns
+    -------
+
+    """
+    if created:
+        return get_profile_details.delay(instance.id)
 
 @receiver(post_delete, sender=Replay)
 def replay_delete(sender, instance, **kwargs):

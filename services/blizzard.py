@@ -47,9 +47,8 @@ class BlizzardAPI:
                     'extra_data': data
                 }
             )
-            print(response, response.status_code, response.text)
-            print(response.headers)
             return obj.data
+        log.error(f' {target} returns {response.status_code}: {response.text}')
         return {}
 
     @property
@@ -84,6 +83,4 @@ class BlizzardAPI:
         auth = self.auth_header
 
         response = requests.get(url=target, headers=auth)
-        print(f'GET to {target} auth={auth}')
-        print(f'{response} - {response.json()}')
         return response.json()

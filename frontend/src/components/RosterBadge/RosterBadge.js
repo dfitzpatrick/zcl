@@ -39,8 +39,8 @@ function getPositionAbbreviation(n) {
     const positions = {
         0: 'TL',
         1: 'TR',
-        2: 'BL',
-        3: 'BR',
+        2: 'BR',
+        3: 'BL',
     }
     return positions[n.toString()]
 }

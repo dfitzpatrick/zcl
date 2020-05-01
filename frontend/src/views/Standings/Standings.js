@@ -63,9 +63,15 @@ export default function Standings() {
     const [loading, setLoading] = React.useState(true)
 
     const changeLeague = (event) => {
+        const seasons = getSeason(leagueData, event.target.value)
+        const idxLastSeason = seasons.length - 1
+        if (idxLastSeason !== -1) {
+            setSeason(seasons[idxLastSeason].id)
+        } else {
+            setSeason(-1)
+        }
         setLeague(event.target.value)
-        setSeasonData(getSeason(leagueData, event.target.value))
-        setSeason(-1)
+        setSeasonData(seasons)
         setLoading(true)
         getStandings(league, season).then(res => {
             setData(res)
@@ -85,7 +91,9 @@ export default function Standings() {
             getLeagues().then(res => {
                 setLoading(true)
                 const leagueId = res[0].id
-                const seasonId = -1
+                const idxLastSeason = res[0].seasons.length -1
+                console.log('last season index is ' + idxLastSeason)
+                const seasonId = res[0].seasons[idxLastSeason].id
                 if (res.length < 1) { return }
                 setLeagueData(res)
                 setLeague(leagueId)

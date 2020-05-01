@@ -139,6 +139,14 @@ def import_guild():
     )
     return obj
 
+def import_game():
+    obj, _ = models.Game.objects.get_or_create(
+        id='1-S2-1-4632373',
+        name='Zone Control CE'
+    )
+    return obj
+
+
 def import_leagues():
     guild = import_guild()
     for l in leagues:
@@ -220,12 +228,13 @@ def update_team_outcome(obj, profile, outcome):
             team_details['outcome'] = outcome
 
 @transaction.atomic()
-def import_matches():
+def import_matches(match_set=matches):
     cache = {}
     handle_map = {h['id']:h['handle'] for h in handles}
     arcade_map = models.Game.objects.all().first()
-    guild = models.Guild.objects.first()
-    for m in matches:
+    guild = import_guild()
+    game = import_game()
+    for m in match_set:
 
         try:
             guild, season, league = None, None, None

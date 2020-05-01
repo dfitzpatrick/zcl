@@ -33,6 +33,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
+import _ from 'lodash'
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -158,8 +159,15 @@ function formatLineData(data, propertyName) {
     return result
 }
 function teamSort(a, b) {
+
     const at = a.position
     const bt = b.position
+    console.log(at, bt)
+    if (at === 3) {
+        if (bt === 2) {
+            return 1
+        }
+    }
     if (at > bt) return 1
     if (at < bt) return -1
     return 0
@@ -193,7 +201,7 @@ export default function MatchDetail(props) {
 
     const classes = useStyles()
     const id = useParams()
-
+    const sortTeams = [0,1,3,2] // Just for display properties
     const [value, setValue] = React.useState(0);
 
     const handleChange = (event, newValue) => {
@@ -377,7 +385,7 @@ export default function MatchDetail(props) {
                                             <GridItem xs={12} sm={12} md={12}>
                                                 <Heading title="Roster" />
                                                 <GridContainer>
-                                                    {match.data.teams.sort(teamSort).map(t => {
+                                                    {_.sortBy(match.data.teams, (o) => { return _.indexOf(sortTeams, o.position)}).map(t => {
                                                         return (<>
                                                             <GridItem xs={12} sm={6} md={6}>
                                                                 <RosterBadge team={t} leaderboardData={leaderboardData} />
