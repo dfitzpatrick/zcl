@@ -197,6 +197,7 @@ INSTALLED_APPS = [
     'channels',
     'websub',
     'django_filters',
+    'django_extensions',
 
 
 ]
