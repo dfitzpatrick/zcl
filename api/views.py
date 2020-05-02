@@ -557,7 +557,7 @@ class ReplayUpload(APIView):
     def match_exists_with_replay(self, id):
         try:
             match = models.Match.objects.get(id=id)
-            return match.replay != None
+            return match.replay is not None
         except models.Match.DoesNotExist:
             return False
         except models.Replay.DoesNotExist:
