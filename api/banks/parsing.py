@@ -19,7 +19,7 @@ class PlayerBank:
         for mode in modes:
             payload = {
                 'wins': _mode_key(mode, 'wins', 'int'),
-                'games': _mode_key(mode, 'wins', 'int'),
+                'games': _mode_key(mode, 'games', 'int'),
                 'elo': _mode_key(mode, 'elo', 'fixed'),
                 'history': _mode_key(mode, 'history', 'string'),
             }
