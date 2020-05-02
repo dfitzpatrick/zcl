@@ -65,15 +65,19 @@ export default function Standings() {
     const changeLeague = (event) => {
         const seasons = getSeason(leagueData, event.target.value)
         const idxLastSeason = seasons.length - 1
+        let seasonId
         if (idxLastSeason !== -1) {
-            setSeason(seasons[idxLastSeason].id)
+            seasonId = seasons[idxLastSeason].id
+            setSeason(seasonId)
         } else {
-            setSeason(-1)
+            seasonId = -1
+            
         }
+        setSeason(seasonId)
         setLeague(event.target.value)
         setSeasonData(seasons)
         setLoading(true)
-        getStandings(league, season).then(res => {
+        getStandings(event.target.value, seasonId).then(res => {
             setData(res)
             setLoading(false)
         })
@@ -92,7 +96,6 @@ export default function Standings() {
                 setLoading(true)
                 const leagueId = res[0].id
                 const idxLastSeason = res[0].seasons.length -1
-                console.log('last season index is ' + idxLastSeason)
                 const seasonId = res[0].seasons[idxLastSeason].id
                 if (res.length < 1) { return }
                 setLeagueData(res)
@@ -114,9 +117,9 @@ export default function Standings() {
     const leagueSelect = () => {
         return (
             <>
-            <Select id='leagueDropDown' value={league} onChange={changeLeague}>
-                {leagueData.map(item => {
-                    return <MenuItem value={item.id}>{item.name}</MenuItem>
+            <Select id='leagueDropDown' value={league||-1} onChange={changeLeague}>
+                {leagueData.map((item, idx) => {
+                    return <MenuItem key={idx} value={item.id}>{item.name}</MenuItem>
                 })}
             </Select>
             </>
@@ -126,10 +129,10 @@ export default function Standings() {
     const seasonSelect = () => {
         return (
             <>
-            <Select id='seasonDropDown' value={season} onChange={changeSeason}>
-                <MenuItem value={-1}>All Time</MenuItem>
-                {seasonData.map(item => {
-                    return <MenuItem value={item.id}>{item.name}</MenuItem>
+            <Select id='seasonDropDown' value={season||-1} onChange={changeSeason}>
+                <MenuItem key={-1} value={-1}>All Time</MenuItem>
+                {seasonData.map((item, idx) => {
+                    return <MenuItem key={idx} value={item.id}>{item.name}</MenuItem>
                 })}
             </Select>
             </>
