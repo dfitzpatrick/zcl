@@ -22,9 +22,11 @@ class StandingsSerializer(serializers.ModelSerializer):
     adjusted_win_rate = serializers.FloatField()
     rank = serializers.IntegerField()
 
+
+
     class Meta:
         model = SC2Profile
-        fields = ('id', 'rank', 'name', 'total_wins', 'total_losses', 'total_matches', 'total_draws', 'rate', 'win_rate', 'adjusted_win_rate')
+        fields = ('id', 'name', 'total_matches', 'total_wins', 'total_losses', 'total_draws', 'rate', 'win_rate', 'adjusted_win_rate', 'rank')
 
 class Standings(APIView):
 
@@ -44,10 +46,64 @@ class Standings(APIView):
         return container
 
 
-
-
-
     def get(self, request: http.HttpRequest):
+        season = request.GET.get('season')
+        league = request.GET.get('league')
+
+        rank_window = Window(expression=Rank(),
+                             order_by=F('adjusted_win_rate').desc())
+
+
+        filter = Q(rosters__match__ranked=True)
+        if league is not None:
+            filter &= Q(rosters__match__league=league)
+        if season is not None:
+            filter &= Q(rosters__match__season=season)
+
+        profiles = (
+            SC2Profile
+            .objects
+            .annotate(
+                total_matches=Count(
+                    'rosters__match',
+                    filter=filter,
+                    distinct=True
+                ),
+                total_wins=Count(
+                    'rosters__match__match_winners',
+                    filter=filter & Q(rosters__match__match_winners__profile__id=F('id')),
+                    distinct=True
+                ),
+                total_losses=Count(
+                    'rosters__match__match_losers',
+                    filter=filter & Q(rosters__match__match_losers__profile__id=F('id')),
+                    distinct=True
+                ),
+                total_draws=F('total_matches') - F('total_wins') - F('total_losses'),
+                win_rate=Case(
+                    When(total_matches=0, then=0),
+                    default=(Decimal('1.0') * F("total_wins") / (
+                                F("total_wins") + F("total_losses") + (0.5 * F("total_draws")))) * 100,
+                    output_field=DecimalField(),
+                ),
+                rate=Case(*self.build_adj_rates(),
+                          default=1,
+                          output_field=DecimalField(decimal_places=3, max_digits=5)
+                          ),
+
+                adjusted_win_rate=F('rate') * F('win_rate'),
+                rank=rank_window
+
+            )
+            .filter(total_matches__gte=1)
+            .order_by('rank')
+        )
+
+        return Response(StandingsSerializer(profiles, many=True).data, status=200)
+
+
+    def get2(self, request: http.HttpRequest):
+        # TODO: Remove after testing
 
         rank_window = Window(expression=Rank(),
                              order_by=F('adjusted_win_rate').desc())
