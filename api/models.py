@@ -313,6 +313,7 @@ class Season(models.Model):
 
     class Meta:
         unique_together = ('league', 'name',)
+        ordering = ('id',)
 
 class Leaderboard(models.Model):
     created = models.DateTimeField(auto_created=True, auto_now_add=True)
