@@ -17,11 +17,13 @@ import CardBody from "components/Card/CardBody.js";
 import CardIcon from "components/Card/CardIcon.js";
 import CardHeader from "components/Card/CardHeader.js";
 import CustomDropdown from "components/CustomDropdown/CustomDropdown"
+import { useHistory } from "react-router-dom";
 
 import {goodTimeDiff} from "../../helpers/dates"
 
 import { cardTitle } from "assets/jss/material-dashboard-pro-react.js";
 import axios from "axios";
+import { createImportSpecifier } from "typescript";
 
 const styles = {
   cardIconTitle: {
@@ -50,6 +52,7 @@ function filterCaseInsensitive(filter, row) {
 const useStyles = makeStyles(styles);
 
 export default function ReactTables() {
+    const history = useHistory()
     const [lbData, setLbData] = React.useState([])
     const [mode, setMode] = React.useState("2v2v2v2")
     const [loading, setLoading] = React.useState(true)
@@ -157,6 +160,18 @@ export default function ReactTables() {
     })
 
   }
+  const addRowClick = (state, row) => {
+    if (row && row.row) {
+      const item = lbData[row.index]
+      return {
+        onClick: (e) => {
+          const target = `/portal/profile/${item.profile.id}`
+          history.push(target)
+        }
+      }
+    }
+    return {}
+  }
   return (<>
     <CustomDropdown
     onClick={handleModeChoice}
@@ -225,6 +240,7 @@ export default function ReactTables() {
                   },
                 
               ]}
+              getTrProps={(state, rowInfo) => addRowClick(state, rowInfo)}
               defaultPageSize={10}
               showPaginationTop
               showPaginationBottom={false}

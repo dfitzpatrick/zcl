@@ -11,6 +11,7 @@ import CardIcon from "components/Card/CardIcon.js";
 import CardHeader from "components/Card/CardHeader.js";
 import { cardTitle } from "assets/jss/material-dashboard-pro-react.js";
 import { makeStyles } from "@material-ui/core/styles";
+import { useHistory } from "react-router-dom";
 
 const styles = {
     cardIconTitle: {
@@ -54,6 +55,7 @@ function getSeason(leagueData, leagueId) {
     return []
 }
 export default function Standings() {
+    const history = useHistory()
     const classes = useStyles();
     const [data, setData] = React.useState([])
     const [leagueData, setLeagueData] = React.useState([])
@@ -145,6 +147,19 @@ export default function Standings() {
         }
         return r
     }
+    const addRowClick = (state, row) => {
+        if (row && row.row) {
+          const item = data[row.index]
+          return {
+            onClick: (e) => {
+              const target = `/portal/profile/${item.id}`
+              console.log(target)
+              history.push(target)
+            }
+          }
+        }
+        return {}
+      }
     return (<>
         <div>
             
@@ -216,6 +231,7 @@ export default function Standings() {
               showPaginationTop
               showPaginationBottom={false}
               className="-striped -highlight"
+              getTrProps={(state, rowInfo) => addRowClick(state, rowInfo)}
             />
             </CardBody>
         </Card>

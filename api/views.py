@@ -31,6 +31,7 @@ from api import annotations, filters
 from api.tasks import parse_replay
 from . import serializers, models
 from . import utils
+from rest_framework.request import Request
 import json
 
 
@@ -711,3 +712,48 @@ class Insights(APIView):
         }
         return Response(response)
 
+class EventView(APIView):
+    def post(self, request: Request):
+        data = request.data.get('data')
+        key = data.get('type')
+        if key == 'match_start':
+            match_start(request)
+
+
+
+def match_start(request):
+    #services.match.create(request.user, request.data)
+    # TODO: Process signal and move code after viability
+    cache = []
+    data = request.data.get('data', {})
+    if data.get('type') != "match_start":
+        return
+    log.debug(f'Received AutoMatch Payload: {data}')
+    players_and_observers = data.get('players', []) + data.get('observers', [])
+    players = [
+        utils.fetch_or_create_profile(p['handle'], cache)
+        for p in players_and_observers
+    ]
+
+
+    users = [p.discord_users.all() for p in players]
+    users = [u for sublist in users for u in sublist]
+
+    stream_container = []
+    streamers = models.TwitchStream.objects.filter(active=True, user__in=users)
+    for s in streamers.all():
+        for p in players:
+            user_choices = ', '.join([u.username for u in p.discord_users.all()])
+            if s.user in p.discord_users.all():
+                stream_container.append({
+                    'profile': serializers.SC2ProfileSerializer(p).data,
+                    'stream': serializers.TwitchStreamSerializer(s).data,
+                })
+    result = {
+        'players': serializers.SC2ProfileSerializer(players, many=True).data,
+        'streamers': stream_container
+    }
+
+
+    import ws
+    ws.send_notification(ws.types.NEW_MATCH_STREAM, result)

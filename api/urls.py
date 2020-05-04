@@ -4,7 +4,7 @@ from rest_framework import routers
 from accounts import views as account_views
 from .banks.views import BankAPIView
 from . import views
-from .standings.views import Standings
+from .standings.views import Standings, ProfileStats
 
 
 router = routers.DefaultRouter()
@@ -32,7 +32,9 @@ urlpatterns = [
     url('^charts/(?P<match_id>\d+)/$', views.ChartsView.as_view()),
     url('test/', views.Insights.as_view()),
     url('^banks/$', BankAPIView.as_view()),
-    url('standings', Standings.as_view(), name='standings')
+    url('standings', Standings.as_view(), name='standings'),
+    url('playerstats/(?P<profile_id>.+)/$', ProfileStats.as_view(), name='playerstats'),
+    url('event/', views.EventView.as_view(), name='event')
 
 
 

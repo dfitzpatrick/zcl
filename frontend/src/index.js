@@ -73,6 +73,7 @@ export default function App() {
       <Route path="/zcl" component={AuthLayout} />
       <PrivateRoute path="/portal" component={AdminLayout} />
       <PrivateRoute path="/portal/matches/:id" component={AdminLayout} />
+      <PrivateRoute exact path="/portal/profile/:id" component={AdminLayout} />
       <Redirect exact from="/" to="/zcl/home" />
     
 

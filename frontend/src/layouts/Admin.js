@@ -14,6 +14,7 @@ import Footer from "components/Footer/Footer.js";
 import Sidebar from "components/Sidebar/Sidebar.js";
 import FixedPlugin from "components/FixedPlugin/FixedPlugin.js";
 import MatchDetail from "../views/Matches/MatchDetail"
+import ProfileDetail from "views/Profile/ProfileDetail.js"
 
 import routes from "routes.js";
 import axios from 'axios'
@@ -182,6 +183,7 @@ export default function Dashboard(props) {
               <Switch>
                 {getRoutes(routes)}
                 <Route exact path="/portal/matches/:id" component={MatchDetail} />
+                <Route exact path="/portal/profile/:id" component={ProfileDetail} />
                 <Redirect from="/portal" to="/portal/leaderboard" />
               </Switch>
             </div>
