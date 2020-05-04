@@ -153,7 +153,6 @@ export default function Standings() {
           return {
             onClick: (e) => {
               const target = `/portal/profile/${item.id}`
-              console.log(target)
               history.push(target)
             }
           }
