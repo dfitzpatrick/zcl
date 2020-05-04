@@ -556,6 +556,15 @@ class Replay:
         xfer_unit_init = self.tracked_units.fetch(event)
         unit_name = xfer_unit_init['m_unitTypeName']
         player = self.get_player(xfer_unit_init['m_controlPlayerId'])
+        if player is None:
+            # 5/3/2020 fix
+            # Replays are failing with Attribute Error: 'NoneType' has no
+            # attribute 'unit_stats'. It looks like this could be failing for
+            # some reason. Applicable match ids are
+            # │['1573851163', '1572709967', '1585779902', '1585769287', '1585765048  File "/home/zcl/zclreplay/streamparser.py", line 354, in _parse    │', '1573851163', '1560719297', '1560717812', '1585765048', '15857581    self._parse_transferred(event)                                   │85', '1585757576', '1585756364', '1585755051', '1585753845', '158575  File "/home/zcl/zclreplay/parser.py", line 561, in _parse_transferr│3155', '1585748819', '1585747386', '1581196844', '1582656342', '1573ed                                                                   │322055', '1572709967', '1569620215', '1569515687', '1569514917', '15    player.unit_stats.transfer(new_owner, unit_name)                 │69514268', '1569513497', '1567870364', '1567870058', '1566122629', 'AttributeError: 'NoneType' object has no attribute 'unit_stats'      │1554060998', '1585755051', '1568997137', '1569620215', '1569515687',~                                                                    │ '1569514268', '1569513497', '1551303756', '1585765048', '1585734882~']
+            log.warning(f'Player is None for Unit Transfer - {xfer_unit_init}')
+            self.tracked_units.add(xfer_unit_init)
+            return
         new_owner = self.get_player(event['m_controlPlayerId'])
 
         player.unit_stats.transfer(new_owner, unit_name)
