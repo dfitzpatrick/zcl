@@ -47,9 +47,12 @@ def replay_delete(sender, instance, **kwargs):
     -------
 
     """
-    print("deleting file from S3")
+    pass
+    # Temporarily disabled
+
+    #print("deleting file from S3")
     # False so FileField doesn't save the model
-    instance.file.delete(False)
+    #instance.file.delete(False)
 
 @receiver(webhook_update)
 def twitch_stream_update(sender: WebSubView, webhook_name: str, uuid, data, **kwargs):
