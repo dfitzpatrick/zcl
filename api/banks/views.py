@@ -16,6 +16,7 @@ class BankAPIView(views.APIView):
         profile_cache = {}
         profile = utils.fetch_or_create_profile(pb.id, profile_cache)
         for mode in pb.modes:
+            print(f'updating self for mode {mode}')
             obj = pb.modes[mode]
             Leaderboard.objects.get_or_create(
                 profile=profile,
@@ -35,6 +36,7 @@ class BankAPIView(views.APIView):
         players = pb.last_game.get('players', {})
         for id, stats in players.items():
             profile = utils.fetch_or_create_profile(id, profile_cache)
+            print(f'getting ready to update {mode} for {profile.name}')
             wins = int(stats.get('wins', 0))
             games = int(stats.get('games', 0))
             losses = int(stats.get('losses', 0))
@@ -51,9 +53,11 @@ class BankAPIView(views.APIView):
             )
             if created:
                 continue
-            updated_iso = lb.updated.timestamp()
-            if updated_iso > time:
+            # updated_iso = lb.updated.timestamp()
+            # Can't use time. Epoch is not UTC based.
+            if lb.games > games:
                 continue
+
             lb.wins = wins
             lb.losses = losses
             lb.games = games

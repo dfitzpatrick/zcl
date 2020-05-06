@@ -10,6 +10,8 @@ from websub.models import Subscription
 from websub.signals import webhook_update
 from websub.views import WebSubView
 from api.tasks import get_profile_details
+from .serializers import TwitchStreamSerializer
+import ws
 
 log = logging.getLogger('zcl.api')
 
@@ -50,7 +52,7 @@ def replay_delete(sender, instance, **kwargs):
     pass
     # Temporarily disabled
 
-    #print("deleting file from S3")
+    #print("deleting file   from S3")
     # False so FileField doesn't save the model
     #instance.file.delete(False)
 
@@ -59,10 +61,14 @@ def twitch_stream_update(sender: WebSubView, webhook_name: str, uuid, data, **kw
     if not webhook_name == 'streams':
         return
     try:
+        active = data != []
         ts = TwitchStream.objects.get(uuid=uuid)
         ts.extra_data = data
-        ts.active = data != []
+        ts.active = active
         ts.save()
+
+        action = ws.types.STREAM_START if active else ws.types.STREAM_STOP
+        ws.send_notification(action, TwitchStreamSerializer(ts).data)
     except TwitchStream.DoesNotExist:
         log.error(f"Missing TwitchStream object for {uuid}")
 
