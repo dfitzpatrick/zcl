@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from django import http
-from django.db.models import Count, Q, F, DecimalField, Case, When, Value, Avg, OuterRef, Subquery
+from django.db.models import Count, Q, F, DecimalField, Case, When, Value, Avg, OuterRef, Subquery, Sum
 from django.db.models.expressions import Window
 from django.db.models.functions import Rank
 from rest_framework import serializers
@@ -169,6 +169,11 @@ class ProfileStats(APIView):
                 )
             )
         )
+        ge_window = Window(expression=Rank(), partition_by=[F('match__match_date')], order_by=(F('match__match_date'), F('game_time')))
+        game_events = profile.game_events.filter(match__in=ms, key__id__istartswith='bunker').annotate(rank=ge_window).annotate(cancels=Case(When(Q(rank=2) & Q(key='bunker_cancelled'), then=1), default=0, output_field=DecimalField()))
+        cancels = int(game_events.aggregate(Sum('cancels'))['cancels__sum'])
+        game_events_1650 = profile.game_events.filter(match__in=ms.filter(lobby_elo__gte=1650), key__id__istartswith='bunker').annotate(rank=ge_window).annotate(cancels=Case(When(Q(rank=2) & Q(key='bunker_cancelled'), then=1), default=0, output_field=DecimalField()))
+        cancels_1650 = int(game_events_1650.aggregate(Sum('cancels'))['cancels__sum'])
 
 
 
@@ -178,6 +183,8 @@ class ProfileStats(APIView):
             'name': profile.name,
             'avatar_url': profile.avatar_url,
             'total_matches': profile.rosters.count(),
+            'first_bunker_cancels': cancels,
+            'first_bunker_cancels_1650': cancels_1650,
             'wins': profile.wins.filter(match__in=ms).count(),
             'total_matches_1650': profile.rosters.filter(match__in=elo_1650).count(),
             'wins_1650': profile.wins.filter(match__in=elo_1650).count(),
@@ -188,4 +195,4 @@ class ProfileStats(APIView):
         results['win_rate'] = (results['wins'] / max([results['total_matches'], 1])) * 100
         results['win_rate_1650'] = (results['wins_1650'] / max([results['total_matches_1650'], 1])) * 100
 
-        return Response(ProfileStatsSerializer(results).data, status=200)
+        return Response(results, status=200)

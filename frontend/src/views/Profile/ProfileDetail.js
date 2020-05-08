@@ -53,6 +53,8 @@ const initialData = {
     wins_1650: 0,
     win_rate_1650: 0,
     death_avg_1650: 0,
+    first_bunker_cancels: 0,
+    first_bunker_cancels_1650: 0,
 }
 const useStyles = makeStyles(styles);
 
@@ -128,7 +130,7 @@ export default function ProfileDetail(props) {
                     <Card>
                         <CardHeader color="primary" icon>
                             <CardIcon color="danger">
-                                WR
+                                PE
                             </CardIcon>
                             
                         </CardHeader>
@@ -138,6 +140,21 @@ export default function ProfileDetail(props) {
                         </CardBody>
                     </Card>
                 </GridItem>>
+                <GridItem>
+                    <Card>
+                        <CardHeader color="primary" icon>
+                            <CardIcon color="danger">
+                                BC
+                            </CardIcon>
+                            
+                        </CardHeader>
+                        <CardBody>
+                        <h4 className={classes.cardIconTitle}>{((data.first_bunker_cancels / data.total_matches)*100).toFixed(1)}%</h4>
+                            <small>FIRST BUNKER CANCELLED</small>
+                        </CardBody>
+                    </Card>
+                </GridItem>>
+                
                 
 
             </GridContainer>
@@ -201,6 +218,21 @@ export default function ProfileDetail(props) {
                         <CardBody>
                         <h4 className={classes.cardIconTitle}>#{data.death_avg_1650.toFixed(1)}</h4>
                             <small>AVG PLAYER ELIMINATED</small>
+                        </CardBody>
+                    </Card>
+                </GridItem>>
+
+                <GridItem>
+                    <Card>
+                        <CardHeader color="primary" icon>
+                            <CardIcon color="danger">
+                                BC
+                            </CardIcon>
+                            
+                        </CardHeader>
+                        <CardBody>
+                        <h4 className={classes.cardIconTitle}>{((data.first_bunker_cancels_1650 / data.total_matches_1650)*100).toFixed(1)}%</h4>
+                            <small>FIRST BUNKER CANCELLED</small>
                         </CardBody>
                     </Card>
                 </GridItem>>
