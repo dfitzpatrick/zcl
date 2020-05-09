@@ -109,6 +109,7 @@ def do_parse(replay_model, replay: StreamParser):
         match.match_winners.all().delete()
         match.matchteam_set.all().delete()
         match.match_losers.all().delete()
+        match.messages.all().delete()
 
     # Create team objects
 
@@ -311,6 +312,16 @@ def do_parse(replay_model, replay: StreamParser):
     utils.gzip_chart_to_s3(feed, match_id=replay.game_id, name='feed')
     utils.gzip_chart_to_s3(time_series, match_id=replay.game_id, name='time_series')
     utils.gzip_chart_to_s3(replay.unit_stats(), match_id=replay.game_id, name='unit_stats')
+
+    for replay_msg in replay.messages:
+        msg_owner = utils.fetch_or_create_profile(replay_msg.profile, profile_cache)
+        models.MatchMessage.objects.create(
+            match=match,
+            profile=msg_owner,
+            message_type=replay_msg.message_type,
+            message=replay_msg.message,
+            game_time=replay_msg.game_time,
+        )
 
     log.info(f"{replay.game_id} - Loaded to Database")
 

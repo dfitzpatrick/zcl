@@ -359,7 +359,7 @@ class UnitStat(models.Model):
     lost = models.IntegerField(default=0)
     killed = models.IntegerField(default=0)
 
-class MatchMessages(WithTimeStamp):
+class MatchMessage(WithTimeStamp):
     match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="messages")
     profile = models.ForeignKey(SC2Profile, on_delete=models.CASCADE, related_name="messages")
     game_time = models.FloatField()
@@ -403,12 +403,12 @@ class MatchTeam(WithTimeStamp):
 
     # I may just be able to do this with queries
     outcome = models.CharField(max_length=50, choices=TEAM_OUTCOMES)
-
+    victim_number = models.IntegerField(default=0)
     def __str__(self):
         if hasattr(self, 'team_players'):
             return "{0}: {1}".format(self.match, self.team_players)
             #   return self.team_players
-        return self.id
+        return str(self.id)
 
 
 

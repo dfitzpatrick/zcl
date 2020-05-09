@@ -6,4 +6,4 @@ __pycache__/
 *.py[cod]
 test.py
 three.SC2Replay
-
+replay_test.py
