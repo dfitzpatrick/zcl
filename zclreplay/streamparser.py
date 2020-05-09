@@ -1,5 +1,5 @@
 from . import Replay, utils
-from .objects import MatchEvent, Event, Player, StreamItem, SegmentEvent, UpgradeEvent
+from .objects import MatchEvent, Event, Player, StreamItem, SegmentEvent, UpgradeEvent, MessageEvent
 import logging
 import typing
 
@@ -12,7 +12,7 @@ class StreamParser(Replay):
 
     def __init__(self, path):
         super(StreamParser, self).__init__(path)
-        self._load_objects()
+        self._load_objects(load_messages=False)
         self._container = []
         self.stream_game_length = 0
         self.stream_segments = {
@@ -271,6 +271,8 @@ class StreamParser(Replay):
         player.eliminated = not player.left_game
         player.killer = killer
         player.eliminated_at = event.game_time
+        if player.team.is_eliminated:
+            player.team.victim_number = self.team_dead_count
 
         key = "player_leave"
         description = f"{player.name} has left the game."
@@ -336,6 +338,27 @@ class StreamParser(Replay):
                 result.append(item)
                 self.stream_segments['early'] = item
         return result
+
+
+    @property
+    def messages(self):
+        for m in self.message_events:
+            m = Event(m)
+            if not m['_event'] == 'NNet.Game.SChatMessage':
+                continue
+            recipient_id = m['m_recipient']
+            owner_id = m['_userid']['m_userId']
+            chat_type = "all_chat" if recipient_id == 0 else "allied_chat"
+            owner = self.get_player(owner_id, 'user_id')
+            if owner is None:
+                continue
+            payload = MessageEvent(
+                profile=owner,
+                game_time=m.game_time,
+                message_type=chat_type,
+                message=m['m_string']
+            )
+            yield payload
 
 
     def _parse(self):

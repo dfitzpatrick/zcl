@@ -370,7 +370,7 @@ class Replay:
         return uid_pid_mapping
 
 
-    def _load_objects(self):
+    def _load_objects(self, load_messages=True):
         """
         Relationships are hard work...
         In order to get Player Ids from the game, we have to dig through a
@@ -405,13 +405,14 @@ class Replay:
         -------
         None
         """
-        # Create a lookup for all messageable events so we can get an accurate
-        # snapshot during each segment we want to find.
-        for msg in self.message_events:
-            if msg['_event'] == 'NNet.Game.SChatMessage':
-                loop = msg['_gameloop']
-                self._message_lookup[loop] = msg
-        self._message_keys = list(self._message_lookup.keys())
+        if load_messages:
+            # Create a lookup for all messageable events so we can get an accurate
+            # snapshot during each segment we want to find.
+            for msg in self.message_events:
+                if msg['_event'] == 'NNet.Game.SChatMessage':
+                    loop = msg['_gameloop']
+                    self._message_lookup[loop] = msg
+            self._message_keys = list(self._message_lookup.keys())
 
 
 
@@ -486,6 +487,10 @@ class Replay:
     @property
     def player_dead_count(self):
         return sum(1 for p in self.players if p.left_game or p.eliminated)
+
+    @property
+    def team_dead_count(self):
+        return sum(1 for t in self.teams if t.is_eliminated)
 
     @property
     def teams(self) -> typing.Optional[typing.List[Team]]:

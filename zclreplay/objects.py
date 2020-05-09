@@ -25,6 +25,13 @@ class UpgradeEvent:
     def __init__(self):
         pass
 
+class MessageEvent:
+    def __init__(self, profile, game_time, message_type, message):
+        self.profile = profile
+        self.game_time = game_time
+        self.message_type = message_type
+        self.message = message
+
 
 class Event(dict):
 
@@ -315,6 +322,7 @@ class Team:
             players = []
         self.id = team_id
         self.players = players
+        self.victim_number = 0
 
 
     def serialize(self):
