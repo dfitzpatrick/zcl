@@ -191,8 +191,8 @@ export default function ProfileDetail(props) {
                             
                         </CardHeader>
                         <CardBody>
-                        <h4 className={classes.cardIconTitle}>{data.all_chats_per_game.toFixed(1)}%</h4>
-                            <small>ALL-CHATS/GAME</small>
+                        <h4 className={classes.cardIconTitle}>{data.all_chats_per_game.toFixed(1)}</h4>
+                            <small># ALL-CHATS/GAME</small>
                         </CardBody>
                     </Card>
                 </GridItem>

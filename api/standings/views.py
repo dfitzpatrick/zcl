@@ -218,7 +218,7 @@ class ProfileStats(APIView):
         all_chats = 'N/A'
         if total_matches > 0:
             all_chats = MatchMessage.objects.filter(profile=profile, match__in=ms).count() or 0
-            all_chats = (all_chats / total_matches) * 100
+            all_chats = all_chats / total_matches
 
         results = {
             'id': profile.id,
