@@ -12,12 +12,23 @@ import CardHeader from "components/Card/CardHeader.js";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import Heading from "components/Heading/Heading.js";
 import Avatar from '@material-ui/core/Avatar'
+import { useHistory } from "react-router-dom";
+import moment from 'moment';
+import ReactTable from "react-table";
 
 async function getProfileDetail(id) {
     const response = await axios.get(`/api/playerstats/${id}`)
     return response.data
 }
-
+function filterCaseInsensitive(filter, row) {
+	const id = filter.pivotId || filter.id;
+	return (
+		row[id] !== undefined ?
+			String(row[id].toLowerCase()).includes(filter.value.toLowerCase())
+		:
+			true
+	);
+}
 const styles = {
     cardIconTitle: {
         ...cardTitle,
@@ -55,6 +66,7 @@ const initialData = {
     death_avg_1650: 0,
     first_bunker_cancels: 0,
     first_bunker_cancels_1650: 0,
+    all_chats_per_game: 0,
 }
 const useStyles = makeStyles(styles);
 
@@ -62,15 +74,30 @@ export default function ProfileDetail(props) {
     const classes = useStyles()
     const [data, setData] = React.useState(initialData)
     const [loading, setLoading] = React.useState(true)
+    const [matches, setMatches] = React.useState([])
+    const history = useHistory()
     React.useEffect(() => {
         setLoading(true)
         const { id } = props.match.params
         getProfileDetail(id).then(res => {
             setData(res)
+            setMatches(res.match_set)
             setLoading(false)
         })
     }, [])
     if (loading === true) { return <div>Loading...</div> }
+
+    const addRowClick = (state, row) => {
+        if (row && row.row) {
+          const item = matches[row.index]
+          return {
+            onClick: (e) => {
+              history.push(`/portal/matches/${item.id}`)
+            }
+          }
+        }
+        return {}
+      }
 
     return (
         <div>
@@ -139,7 +166,7 @@ export default function ProfileDetail(props) {
                             <small>AVG PLAYER ELIMINATED</small>
                         </CardBody>
                     </Card>
-                </GridItem>>
+                </GridItem>
                 <GridItem>
                     <Card>
                         <CardHeader color="primary" icon>
@@ -153,7 +180,22 @@ export default function ProfileDetail(props) {
                             <small>FIRST BUNKER CANCELLED</small>
                         </CardBody>
                     </Card>
-                </GridItem>>
+                </GridItem>
+
+                <GridItem>
+                    <Card>
+                        <CardHeader color="primary" icon>
+                            <CardIcon color="danger">
+                                BC
+                            </CardIcon>
+                            
+                        </CardHeader>
+                        <CardBody>
+                        <h4 className={classes.cardIconTitle}>{data.all_chats_per_game.toFixed(1)}%</h4>
+                            <small>ALL-CHATS/GAME</small>
+                        </CardBody>
+                    </Card>
+                </GridItem>
                 
                 
 
@@ -211,7 +253,7 @@ export default function ProfileDetail(props) {
                     <Card>
                         <CardHeader color="primary" icon>
                             <CardIcon color="danger">
-                                WR
+                                PE
                             </CardIcon>
                             
                         </CardHeader>
@@ -220,7 +262,7 @@ export default function ProfileDetail(props) {
                             <small>AVG PLAYER ELIMINATED</small>
                         </CardBody>
                     </Card>
-                </GridItem>>
+                </GridItem>
 
                 <GridItem>
                     <Card>
@@ -235,10 +277,57 @@ export default function ProfileDetail(props) {
                             <small>FIRST BUNKER CANCELLED</small>
                         </CardBody>
                     </Card>
-                </GridItem>>
+                </GridItem>
                 
 
             </GridContainer>
+            <GridContainer xs={12} md={12}>
+            <GridItem  xs={12} md={12}>
+                    <Card>
+                        <CardHeader color="primary" icon>
+                            <CardIcon color="danger">
+                                Matches
+                            </CardIcon>
+                            
+                        </CardHeader>
+                        <CardBody>
+                        <ReactTable
+              data={data.match_set}
+              filterable
+              defaultFilterMethod={filterCaseInsensitive}
+              columns={[
+                {
+                    Header: "Date",
+                    id: "match_date",
+                    accessor: d => {
+                        return moment(d.match_date).format("YYYY-MM-DD hh:mm")
+                    }
+                },
+                {
+                  
+                  Header: "Players",
+                  accessor: "players"
+                },
+                {
+                  Header: "Winners",
+                  accessor: "winners"
+                },
+                
+              ]}
+              getTrProps={(state, rowInfo) => addRowClick(state, rowInfo)}
+              defaultPageSize={10}
+              showPaginationTop
+              showPaginationBottom={false}
+              className="-striped -highlight"
+            />
+
+
+                        </CardBody>
+                    </Card>
+                </GridItem>
+
+            </GridContainer>
+           
         </div>
     )
 }

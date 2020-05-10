@@ -9,7 +9,9 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
 from rest_framework.views import APIView
-from api.models import Segment, Match
+from api.models import Segment, Match, MatchMessage
+from api.serializers import MatchSerializer
+from django.contrib.postgres.aggregates import StringAgg
 
 
 from ..models import SC2Profile
@@ -104,6 +106,16 @@ class Standings(APIView):
 
         return Response(StandingsSerializer(profiles, many=True).data, status=200)
 
+class AbbreviatedMatchSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    match_date = serializers.CharField()
+    players = serializers.CharField()
+    winners = serializers.CharField()
+
+
+    # class Meta:
+    #   model = Match
+    #    fields = ('id', 'players', 'winners',)
 
 class ProfileStatsSerializer(serializers.Serializer):
 
@@ -135,6 +147,7 @@ class ProfileStats(APIView):
             Match
             .objects
             .all()
+
             .annotate(
                 players=Count('rosters', distinct=True),
                 lobby_elo=Avg(
@@ -169,6 +182,30 @@ class ProfileStats(APIView):
                 )
             )
         )
+        ms_qs =  (
+            ms
+          .prefetch_related(
+                'rosters__sc2_profile__leaderboards',
+
+                'matchteam_set',
+                'matchteam_set__rosters__sc2_profile__leaderboards',
+
+                'matchteam_set__rosters__lane__leaderboards',
+            )
+            .annotate(players=StringAgg(
+                'rosters__sc2_profile__name',
+                delimiter=', ',
+                distinct=True,
+            ))
+            .annotate(winners=StringAgg(
+                'match_winners__profile__name',
+                delimiter=', ',
+                distinct=True
+            ))
+            .filter(rosters__sc2_profile__id=profile.id)
+            .order_by('-match_date')
+        )
+
         ge_window = Window(expression=Rank(), partition_by=[F('match__match_date')], order_by=(F('match__match_date'), F('game_time')))
         game_events = profile.game_events.filter(match__in=ms, key__id__istartswith='bunker').annotate(rank=ge_window).annotate(cancels=Case(When(Q(rank=2) & Q(key='bunker_cancelled'), then=1), default=0, output_field=DecimalField()))
         cancels = int(game_events.aggregate(Sum('cancels'))['cancels__sum'])
@@ -177,12 +214,18 @@ class ProfileStats(APIView):
 
 
 
+        total_matches = profile.rosters.filter(match__in=ms).count()
+        all_chats = 'N/A'
+        if total_matches > 0:
+            all_chats = MatchMessage.objects.filter(profile=profile, match__in=ms).count() or 0
+            all_chats = (all_chats / total_matches) * 100
 
         results = {
             'id': profile.id,
             'name': profile.name,
             'avatar_url': profile.avatar_url,
-            'total_matches': profile.rosters.count(),
+            'all_chats_per_game': all_chats,
+            'total_matches': profile.rosters.filter(match__in=ms).count(),
             'first_bunker_cancels': cancels,
             'first_bunker_cancels_1650': cancels_1650,
             'wins': profile.wins.filter(match__in=ms).count(),
@@ -194,5 +237,6 @@ class ProfileStats(APIView):
         }
         results['win_rate'] = (results['wins'] / max([results['total_matches'], 1])) * 100
         results['win_rate_1650'] = (results['wins_1650'] / max([results['total_matches_1650'], 1])) * 100
+        results['match_set'] = AbbreviatedMatchSerializer(ms_qs, many=True).data
 
         return Response(results, status=200)
