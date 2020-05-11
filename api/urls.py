@@ -23,6 +23,12 @@ router.register('gameevents', views.GameEventView, basename='gameevents')
 router.register('teams', views.TeamView, basename='teams')
 
 
+
+urlpatterns = [
+
+    # ...
+]
+
 urlpatterns = [
     url('', include(router.urls)),
     url('current_user/', views.CurrentUser.as_view()),
@@ -34,7 +40,8 @@ urlpatterns = [
     url('^banks/$', BankAPIView.as_view()),
     url('standings', Standings.as_view(), name='standings'),
     url('playerstats/(?P<profile_id>.+)/$', ProfileStats.as_view(), name='playerstats'),
-    url('event/', views.EventView.as_view(), name='event')
+    url('event/', views.EventView.as_view(), name='event'),
+
 
 
 
