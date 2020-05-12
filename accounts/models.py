@@ -59,6 +59,7 @@ class DiscordUser(AbstractUser):
     email = models.EmailField(verbose_name='Email Address', max_length=255, unique=True)
     discriminator = models.IntegerField()
     avatar = models.CharField(max_length=255, blank=True, null=True)
+    client_heartbeat = models.DateTimeField(null=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['id', 'username', 'discriminator']

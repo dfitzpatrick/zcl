@@ -56,3 +56,6 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
     async def stream_stop(self, payload):
         return await self.default_handler(payload)
+
+    async def user_update(self, payload):
+        return await self.default_handler(payload)

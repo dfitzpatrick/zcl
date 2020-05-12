@@ -33,7 +33,7 @@ from . import serializers, models
 from . import utils
 from rest_framework.request import Request
 import json
-
+from api.permissions import IsOwner
 
 # Create your views here.
 
@@ -87,7 +87,7 @@ def exchange_discord_token(request):
 
 class DiscordUserView(viewsets.ModelViewSet):
     serializer_class = serializers.DiscordUserSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = models.DiscordUser.objects.all()
 
     @action(methods=['GET', 'POST'], detail=True)

@@ -4,17 +4,36 @@ from django.conf import settings
 from django.db.models.signals import pre_delete, post_delete, post_save
 from django.dispatch.dispatcher import receiver
 
-from accounts.models import SocialAccount
+from accounts.models import SocialAccount, DiscordUser
 from api.models import Replay, TwitchStream, SC2Profile
 from websub.models import Subscription
 from websub.signals import webhook_update
 from websub.views import WebSubView
 from api.tasks import get_profile_details
-from .serializers import TwitchStreamSerializer
+from .serializers import TwitchStreamSerializer, DiscordUserSerializer
 import ws
 
 log = logging.getLogger('zcl.api')
 
+
+@receiver(post_save, sender=DiscordUser)
+def user_update(sender, instance, created, **kwargs):
+    """
+    Sends updates to the user model being changed. One common reason is
+    updating a client heartbeat. Send this out.
+    Parameters
+    ----------
+    sender
+    instance
+    created
+    kwargs
+
+    Returns
+    -------
+
+    """
+    payload = DiscordUserSerializer(instance).data
+    ws.send_notification(ws.types.USER_UPDATE, payload)
 
 @receiver(post_save, sender=SC2Profile)
 def profile_get_details(sender, instance, created, **kwargs):

@@ -72,7 +72,7 @@ class DiscordUserSerializer(serializers.ModelSerializer):
         return str(instance.id)
     class Meta:
         model = DiscordUser
-        fields = ('id', 'created', 'username', 'discriminator', 'avatar')
+        fields = ('id', 'created', 'username', 'discriminator', 'avatar', 'client_heartbeat')
 
 
 
