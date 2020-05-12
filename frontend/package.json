@@ -7,6 +7,7 @@
     "@material-ui/icons": "^4.2.1",
     "@nivo/bar": "^0.61.1",
     "@nivo/line": "^0.61.1",
+    "@sentry/browser": "^5.15.5",
     "axios": "^0.19.2",
     "chartist": "0.10.1",
     "history": "4.9.0",

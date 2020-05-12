@@ -27,7 +27,10 @@ import "assets/scss/material-dashboard-pro-react.scss?v=1.8.0";
 import {userInitialState} from "variables/general.js"
 import axios from "axios";
 import ErrorPage from "views/Pages/ErrorPage";
+import * as Sentry from '@sentry/browser'
 const hist = createBrowserHistory();
+
+Sentry.init({dsn: "https://d7b89e6e0f654c98a315e16515e75ce3@o391198.ingest.sentry.io/5236925"})
 
 async function getCurrentUser() {
   // Relies on session state from login
@@ -75,6 +78,7 @@ export default function App() {
       <PrivateRoute path="/portal/matches/:id" component={AdminLayout} />
       <PrivateRoute exact path="/portal/profile/:id" component={AdminLayout} />
       <Redirect exact from="/" to="/zcl/home" />
+      
     
 
       

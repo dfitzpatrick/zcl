@@ -13,6 +13,8 @@ class PlayerBank:
         self.player_section = self.root.find("Section[@name='Player']")
         self.last_game_section = self.root.find("Section[@name='LG']")
         self.modes = {}
+        # Default to handle 10385601fc8a4c9b939d9db802563ce6
+        self.last_game = {}
 
         modes = ['1v1', '1v1v1v1', '2v2v2v2', '3v3v3v3', '2v2']
         _mode_key = partial(self.get_mode_key, self.player_section)
@@ -25,6 +27,10 @@ class PlayerBank:
             }
             payload['losses'] = int(payload['games']) - int(payload['wins'])
             self.modes[mode] = payload
+
+        if self.last_game_section is None:
+            # Resolve sentry 10385601fc8a4c9b939d9db802563ce6
+            return
 
         lg_mode = self.get_key(self.last_game_section, 'mode')
         winning_team = self.get_key(self.last_game_section, 'winningteam')
