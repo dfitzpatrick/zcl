@@ -17,8 +17,8 @@ class Helix:
                  social_account: SocialAccount,
                  *,
 
-                 client_id=os.environ.get('TWITCH_CLIENT_ID'),
-                 secret=os.environ.get('TWITCH_CLIENT_SECRET'),
+                 client_id=settings.TWITCH_CLIENT_ID,
+                 secret=settings.TWITCH_CLIENT_SECRET,
                  bearer=None,
                  ):
         self.site = settings.SITE_URL
