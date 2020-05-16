@@ -5,15 +5,18 @@ from . import models
 
 
 class MatchAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'id', 'created', 'match_date']
-
+    list_display = ['__str__', 'id', 'created', 'match_date', 'league', 'season', 'ranked']
+    list_editable = ['league', 'season', 'ranked']
+    list_select_related = ('league', 'season', 'season__league',)
+    raw_id_fields = ('league', 'season')
+    list_per_page = 25
+    ordering = ('-match_date',)
     def get_queryset(self, request):
 
         return (
             super(MatchAdmin, self)
             .get_queryset(request)
-            .select_related('league', 'season',)
-            .prefetch_related('rosters')
+            .prefetch_related('rosters', 'season__league')
             .annotate(match_players=StringAgg(
                 'rosters__sc2_profile__name',
                 delimiter=', ')
