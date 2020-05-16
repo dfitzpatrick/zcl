@@ -177,11 +177,11 @@ class Match(models.Model):
 
     # A match may belong to a league, or may not. If a league is deleted, we
     # keep the matches
-    league = models.ForeignKey('League', on_delete=models.SET_NULL, null=True, related_name='matches')
+    league = models.ForeignKey('League', on_delete=models.SET_NULL, null=True, blank=True, related_name='matches')
 
     # A match may belong to a season, or may not. If a season is deleted, we
     # keep the matches.
-    season = models.ForeignKey('Season', on_delete=models.SET_NULL, null=True, related_name='seasons')
+    season = models.ForeignKey('Season', on_delete=models.SET_NULL, null=True, blank=True, related_name='seasons')
 
     # Since all games are not manually entered, do not allow this to be null
     game_id = models.CharField(max_length=300)
