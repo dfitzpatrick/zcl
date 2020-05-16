@@ -3,6 +3,7 @@ import datetime
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.contrib.postgres.fields import JSONField
 from django.db import models
+import typing
 
 
 class DiscordUserManager(BaseUserManager):
@@ -80,6 +81,35 @@ class SocialAccount(models.Model):
     provider = models.CharField(max_length=100)
     username = models.CharField(max_length=200, default="No Username")
     extra_data = JSONField(default=dict)
+
+    @property
+    def data(self) -> typing.Dict[str, typing.Any]:
+        """
+        Annotates the extra data with expires_at
+        Returns
+        -------
+
+        """
+        expires_in = self.extra_data.get('expires_in', 0)
+        expires_at = self.updated + datetime.timedelta(seconds=expires_in)
+        result = self.extra_data
+        result['expires_at'] = expires_at
+        return result
+
+    @property
+    def token_expiring(self) -> bool:
+        """
+        Boolean to check if a token has expired or will be expiring within
+        5 minutes.
+        Returns
+        -------
+        """
+        expires_at = self.data.get('expires_at')
+        if expires_at is None:
+            return True
+
+        now = datetime.datetime.now(datetime.timezone.utc)
+        return expires_at - now < datetime.timedelta(minutes=5)
 
 
     def __str__(self):

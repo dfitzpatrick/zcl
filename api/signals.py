@@ -11,6 +11,7 @@ from websub.signals import webhook_update
 from websub.views import WebSubView
 from api.tasks import get_profile_details
 from .serializers import TwitchStreamSerializer, DiscordUserSerializer
+from services.twitch import Helix
 import ws
 
 log = logging.getLogger('zcl.api')
@@ -93,17 +94,17 @@ def twitch_stream_update(sender: WebSubView, webhook_name: str, uuid, data, **kw
 
 
 @receiver(pre_delete, sender=SocialAccount)
-def social_account_delete(sender, instance, **kwargs):
+def social_account_delete(sender, instance: SocialAccount, **kwargs):
     # Get any Twitch stream and remove it
     log.debug('in delete signal for SocialAccount')
     log.debug(f"# of Twitch Streams: {len(instance.twitch_streams.all())}")
-    headers = {
-        'Content-Type': 'application/json',
-        'Client-ID': settings.TWITCH_CLIENT_ID,
-    }
+
     for t in instance.twitch_streams.all():
         t:TwitchStream
         try:
+            h = Helix(instance)
+            h.refresh_token()
+            headers = h.headers
             uuid = t.uuid
             twitch_name = t.username
             username = t.user.username

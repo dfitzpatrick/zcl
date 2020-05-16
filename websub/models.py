@@ -29,7 +29,7 @@ class Subscription(models.Model):
         subscription_update.delay(self.pk, 'subscribe', refresh=True, **kwargs)
 
     @classmethod
-    def subscribe(cls, hub, topic, callback_name, **kwargs) -> None:
+    def subscribe(cls, hub, topic, callback_name, **kwargs):
         """
         Populates the model with information and starts a background task
         that will start the handshake with the Publisher.
@@ -44,18 +44,16 @@ class Subscription(models.Model):
         -------
 
         """
-
         from .tasks import subscription_update
         uuid = uuid4()
         sub, created = cls.objects.get_or_create(
             hub=hub,
             topic=topic,
             callback_name=callback_name,
-            defaults = {
+            defaults={
                 'uuid': uuid
             }
         )
-        if created:
-            log.debug(f"Sending to Celery 'subscribe' to {topic}")
-            subscription_update.delay(sub.pk, 'subscribe', **kwargs)
+        log.debug(f"Sending to Celery 'subscribe' to {topic}")
+        subscription_update.delay(sub.pk, 'subscribe', **kwargs)
         return sub
