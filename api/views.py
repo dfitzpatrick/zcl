@@ -719,12 +719,12 @@ class EventView(APIView):
         if key == 'match_start':
             match_start(request)
 
-
+        return Response(status=status.HTTP_200_OK)
 
 def match_start(request):
     #services.match.create(request.user, request.data)
     # TODO: Process signal and move code after viability
-    cache = []
+    cache = {}
     data = request.data.get('data', {})
     if data.get('type') != "match_start":
         return
