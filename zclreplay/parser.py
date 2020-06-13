@@ -63,7 +63,7 @@ def closest_version(n, versions) -> (int, int):
     seq = list(map(int, re.findall('\\d+', ''.join(versions.list_all()))))
     lst = sorted(seq + [n])
     min_index = lst.index(n) - 1
-    max_index = min_index + 2
+    max_index = min(min_index + 2, len(lst)-1)
     return seq[min_index], lst[max_index]
 
 
