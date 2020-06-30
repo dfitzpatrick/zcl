@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Alerter Test</title>
+        <link href="https://fonts.googleapis.com/css?family=Permanent+Marker&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+    <link rel="stylesheet" href="{% static 'css/alerter.css' %}">
+    <script src="{% static 'js/message-queue.js' %}"></script>
+
+</head>
+<body>
+
+    <div id="animatedElement" class="msgInvisible">
+    <div class="alertbox">
+        <div class="polaroid">
+            <img id='avatar' src="{% static 'img/bunker_build.jpg' %}">
+            <div style="text-align: center; padding: 10px 20px;">
+                Game Alert!
+            </div>
+        </div>
+        <div class="alert-message">
+            <p id="msgDisplay"></p>
+        </div>
+    </div>
+    </div>
+
+<script src="{% static 'js/alerter.js' %}"></script>
+
+
+</body>
+</html>
