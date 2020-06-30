@@ -34,6 +34,7 @@ from . import utils
 from rest_framework.request import Request
 import json
 from api.permissions import IsOwner
+from django.db import transaction
 
 # Create your views here.
 
@@ -191,7 +192,7 @@ class MatchView(viewsets.ModelViewSet):
                 ))
 
                 .order_by('-match_date')
-                .filter(legacy=False)
+                .filter(legacy=False, status='final')
     )
 
     @action(methods=['GET'], detail=True)
@@ -721,7 +722,37 @@ class EventView(APIView):
 
         return Response(status=status.HTTP_200_OK)
 
+
+def create_match(request):
+    cache = {}
+    data = request.data.get('data', {})
+    if data is None:
+        return
+    game_id = str(data['game_id'])
+    observers = data['observers']
+    players = data['players']
+
+    match, match_created = models.Match.objects.get_or_create(
+        id=game_id,
+        defaults={
+            'status': 'initial',
+        }
+    )
+    for p in players:
+        profile = utils.fetch_or_create_profile(p['handle'], cache)
+        models.Roster.objects.get_or_create(
+            match=match,
+            profile=profile,
+            defaults={
+                'team_number': p['team'],
+                'position_number': p['slot'],
+            }
+        )
+
+
+
 def match_start(request):
+
     #services.match.create(request.user, request.data)
     # TODO: Process signal and move code after viability
     cache = {}
@@ -738,7 +769,7 @@ def match_start(request):
 
     users = [p.discord_users.all() for p in players]
     users = [u for sublist in users for u in sublist]
-
+    log.debug(users)
     stream_container = []
     streamers = models.TwitchStream.objects.filter(active=True, user__in=users)
     for s in streamers.all():

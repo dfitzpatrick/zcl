@@ -98,6 +98,7 @@ def do_parse(replay_model, replay: StreamParser):
     )
     match.match_date = replay.game_time
     match.legacy = False
+    match.status = 'final'
     match.save()
     if not match_created:
         # Re-parse. Clear out any match events or anything that could have different lengths
@@ -327,11 +328,11 @@ def do_parse(replay_model, replay: StreamParser):
 
 
 @shared_task
-def get_profile_details(id: str):
+def get_profile_details(id: str, api_class=None):
     try:
+        api = services.blizzard.BlizzardAPI() if api_class is None else api_class
         profile = models.SC2Profile.objects.get(id=id)
-        region_id, game, realm_id, profile_id = id.split('-')
-        api = services.blizzard.BlizzardAPI()
+        realm_id, game, region_id, profile_id = id.split('-')
         data = api.get_profile(id).get('summary', {})
         profile.profile_url = f'https://starcraft2.com/en-us/profile/{region_id}/{realm_id}/{profile_id}'
         profile.name = data.get('displayName', 'Unknown')

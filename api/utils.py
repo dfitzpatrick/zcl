@@ -8,10 +8,18 @@ import boto3
 import requests
 import zclreplay
 from django.conf import settings
-
-
+from typing import Iterator, TypeVar, Generic
+from django.db.models import QuerySet
 
 from .models import SC2Profile
+
+_Z = TypeVar("_Z")
+
+
+class QueryType(typing.Generic[_Z], QuerySet):
+    def __iter__(self) -> typing.Iterator[_Z]:
+        pass
+
 
 def serialize_drf_serializers(obj):
     if hasattr(obj, 'data'):
@@ -53,7 +61,7 @@ def get_chart_from_s3(match_id: int, name: str, bucket: str = 'zcleagues'):
     return data
 
 
-def fetch_or_create_profile(profile: typing.Union[str, zclreplay.Player], cache: typing.Dict[str, typing.Any]) -> typing.Optional[SC2Profile]:
+def fetch_or_create_profile(profile: typing.Union[str, zclreplay.Player], cache: typing.Dict[str, typing.Any] = {}) -> typing.Optional[SC2Profile]:
     """
     Commonly we need to fetch profiles from the replay parser. This helps optimize it by storing the results of a
     query in a cache that the caller passes in. Python passes in dicts by reference so this will mutate from the caller.

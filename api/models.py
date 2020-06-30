@@ -206,6 +206,9 @@ class Match(models.Model):
     # to just exclude on replay later.
     legacy = models.BooleanField(default=False)
 
+    # Track Observers, either for 'initial' matches or just to know for later.
+    observers = models.ManyToManyField(SC2Profile, blank=True, related_name='observers')
+
 
     def __str__(self):
         """
@@ -218,6 +221,11 @@ class Match(models.Model):
         if hasattr(self, 'match_players'):
             return self.match_players
         return str(self.id)
+
+
+
+
+
 
 
 class Roster(models.Model):
@@ -244,6 +252,9 @@ class Roster(models.Model):
 
     class Meta:
         unique_together = ('match', 'sc2_profile', 'team_number', 'position_number')
+
+
+
 
 class MatchClient(models.Model):
     """

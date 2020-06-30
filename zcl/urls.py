@@ -16,6 +16,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('websub/', include('websub.urls')),
     path('api/', include('api.urls')),
+    path('overlays/', include('overlays.urls')),
     re_path(r'^.*/$', index, name='all'),
 ]
 

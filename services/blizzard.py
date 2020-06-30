@@ -73,7 +73,8 @@ class BlizzardAPI:
             return self._extra_data
 
     def get_profile(self, profile_string):
-        region, game, realm, profile = profile_string.split('-')
+        # 6/29 reorder due to handle strings being slightly different from bnet url order.
+        realm, game, region, profile = profile_string.split('-')
         return self._get_profile(region, realm, profile)
 
     def _get_profile(self, region_id, realm_id, profile_id):
@@ -83,4 +84,5 @@ class BlizzardAPI:
         auth = self.auth_header
 
         response = requests.get(url=target, headers=auth)
+
         return response.json()

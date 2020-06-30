@@ -1,8 +1,9 @@
 import json
 import traceback
-
+import logging
 from channels.generic.websocket import AsyncWebsocketConsumer
 
+log = logging.getLogger('zcl.ws.consumers')
 
 def catch_exception(f):
     def wrapper(*args, **kwargs):
@@ -20,13 +21,14 @@ def catch_exception(f):
 class NotificationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         # Join room group
-        await self.channel_layer.group_add('notifications',self.channel_name)
+        self.group_name = 'notifications'
+        await self.channel_layer.group_add(self.group_name,self.channel_name)
         await self.accept()
 
     async def disconnect(self, close_code):
         # Leave room group
         await self.channel_layer.group_discard(
-            self.group,
+            self.group_name,
             self.channel_name
         )
 
@@ -44,8 +46,10 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=payload)
 
     async def default_handler(self, payload):
+        log.debug(f"Sending WS Event {payload}")
         if isinstance(payload, dict):
             payload = json.dumps(payload)
+
         await self.send(text_data=payload)
 
     async def new_match_stream(self, payload):
@@ -58,4 +62,17 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         return await self.default_handler(payload)
 
     async def user_update(self, payload):
+        return await self.default_handler(payload)
+
+
+class StreamerConsumer(NotificationConsumer):
+    async def connect(self):
+        group = self.scope['url_route']['kwargs']['streamer_id']
+
+        self.group_name = group
+
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
+        await self.accept()
+
+    async def match_event(self, payload):
         return await self.default_handler(payload)
