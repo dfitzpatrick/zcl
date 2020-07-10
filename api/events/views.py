@@ -175,7 +175,7 @@ class EventView(APIView):
             return HeroTeam(hero=hero, teammates=teammates)
 
         except KeyError as e:
-            log.error(f"Events: Could not get required key from payload - {e}")
+            log.error(f"Events: Could not get required key from payload {payload} - {profile_key} - {e}")
         except TempRoster.DoesNotExist:
             log.error(f"Events: Unable to fetch Roster for hero or team mates in {payload}")
 

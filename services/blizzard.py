@@ -64,6 +64,9 @@ class BlizzardAPI:
             now = datetime.now(timezone.utc)
             if not self._extra_data:
                 self._extra_data = AppToken.objects.get(provider='blizzard').data
+            # 7/10 attempt to resolve access_token authentication issues with name resolution.
+            if self._extra_data.get('access_token') is None:
+                self._extra_data = self._token_request()
             if self._extra_data.get('expires_at', now) - now < timedelta(seconds=120):
                 self._extra_data = self._token_request()
             return self._extra_data
