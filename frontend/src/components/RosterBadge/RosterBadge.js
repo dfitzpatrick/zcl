@@ -101,7 +101,7 @@ export default function RosterBadge(props) {
         const colorBlock = {
             backgroundColor: 'rgba(' + p.color + ')'
         }
-        
+        const lane = p.lane == null ? "No Lane" : "Laning " + p.lane.name
         return (<>
             <GridContainer>
                         <GridItem style={{ display: 'inline-flex' }}>
@@ -111,7 +111,7 @@ export default function RosterBadge(props) {
                             
                         </GridItem>
                         <GridItem>
-                            <h4 className={classes.cardIconTitle}>{p.sc2_profile.name} </h4><small>(Laning {p.lane.name})</small>
+                            <h4 className={classes.cardIconTitle}>{p.sc2_profile.name} </h4><small>({lane})</small>
                         </GridItem>
                         </GridContainer>
                         
