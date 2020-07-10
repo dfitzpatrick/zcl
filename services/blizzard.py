@@ -75,12 +75,12 @@ class BlizzardAPI:
             self._extra_data = self._token_request()
             return self._extra_data
 
-    def get_profile(self, profile_string):
+    def get_profile(self, profile_string) -> typing.Optional[typing.Dict[str, typing.Any]]:
         # 6/29 reorder due to handle strings being slightly different from bnet url order.
         realm, game, region, profile = profile_string.split('-')
         return self._get_profile(region, realm, profile)
 
-    def _get_profile(self, region_id, realm_id, profile_id):
+    def _get_profile(self, region_id, realm_id, profile_id) -> typing.Optional[typing.Dict[str, typing.Any]]:
         base = self.base_url(region_id, realm_id)
         target = f'{base}/sc2/profile/{region_id}/{realm_id}/{profile_id}'
 
@@ -88,4 +88,8 @@ class BlizzardAPI:
 
         response = requests.get(url=target, headers=auth)
 
-        return response.json()
+        if response.status_code == 200:
+            return response.json()
+        else:
+            log.warning(f"{target} returns {response.status_code} {response.text} {auth}")
+            return

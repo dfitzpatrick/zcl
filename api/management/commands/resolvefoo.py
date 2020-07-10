@@ -14,6 +14,6 @@ class Command(BaseCommand):
         b = BlizzardAPI()
         foos = SC2Profile.objects.filter(name='FOO').order_by('-created')
         for foo in foos:
-            get_profile_details.delay(foo.id, api_class=b)
+            get_profile_details.delay(foo.id, api_class=b, ignore_missing=True)
 
 

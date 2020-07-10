@@ -328,17 +328,27 @@ def do_parse(replay_model, replay: StreamParser):
 
 
 @shared_task
-def get_profile_details(id: str, api_class=None):
+def get_profile_details(id: str, api_class=None, ignore_missing=False):
     try:
         api = services.blizzard.BlizzardAPI() if api_class is None else api_class
         profile = models.SC2Profile.objects.get(id=id)
         realm_id, game, region_id, profile_id = id.split('-')
-        data = api.get_profile(id).get('summary', {})
+        name, portrait, clan_name, clan_tag = 'Deleted', '', '', ''
+        data = api.get_profile(id)
+        if data is None and ignore_missing:
+            return
+
+        if data is not None:
+            summary = data['summary']
+            name = summary['displayName']
+            portrait = summary.get('portrait', '')
+            clan_name = summary.get('clanName', '')
+            clan_tag = summary.get('clanTag', '')
         profile.profile_url = f'https://starcraft2.com/en-us/profile/{region_id}/{realm_id}/{profile_id}'
-        profile.name = data.get('displayName', 'Unknown')
-        profile.avatar_url = data.get('portrait', '')
-        profile.clan_name = data.get('clanName', '')
-        profile.clan_tag = data.get('clanTag', '')
+        profile.name = name
+        profile.avatar_url = portrait
+        profile.clan_name = clan_name
+        profile.clan_tag = clan_tag
         profile.save()
     except models.SC2Profile.DoesNotExist:
         return

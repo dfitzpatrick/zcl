@@ -16,8 +16,8 @@ class LoggingTask(Task):
         kwargs={}
         if log.isEnabledFor(logging.DEBUG):
             kwargs['exc_info']=exc
-        print('Task % failed to execute', task_id, **kwargs)
-        log.error('Task % failed to execute', task_id, **kwargs)
+        print('Task % failed to execute', task_id, kwargs)
+        log.error('Task % failed to execute', task_id, kwargs)
         super().on_failure(exc, task_id, args, kwargs, einfo)
 
 
