@@ -15,7 +15,6 @@ class Command(BaseCommand):
         discord_id = options['discord_id']
         user = DiscordUser.objects.get(id=discord_id)
         for p in user.profiles.all():
-            print(p)
             log.info(p)
 
 
