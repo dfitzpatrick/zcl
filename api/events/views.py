@@ -19,6 +19,7 @@ from api.models import Match as TempMatch
 from api.models import Roster as TempRoster
 
 import random
+import ws
 
 log = logging.getLogger('zcl.api.event')
 EventPayload = typing.Dict[str, typing.Any]
@@ -318,6 +319,7 @@ class EventView(APIView):
     def match_end(self, payload: EventPayload, user: DiscordUser):
         owner_team = self.get_teammates(payload, 'player')
         self.send_event_to_team(payload, owner_team)
+        ws.send_notification('match_event', payload)
         game_id = str(payload['game_id'])
         try:
             match = TempMatch.objects.get(id=game_id)
@@ -463,4 +465,5 @@ class EventView(APIView):
                 }
             )
         print('done!')
+        ws.send_notification('match_event', payload)
 
