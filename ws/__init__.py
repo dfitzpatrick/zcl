@@ -7,7 +7,7 @@ import json
 import ws.types
 
 CACHE = []
-CACHE_MAX_SIZE = 0
+CACHE_MAX_SIZE = 15
 
 log = logging.getLogger(__name__)
 
@@ -28,4 +28,4 @@ def send_notification(action_type, payload):
             'payload': payload
         }
     )
-    #CACHE = CACHE[:CACHE_MAX_SIZE - 1] + [payload]
+    CACHE = CACHE[:CACHE_MAX_SIZE - 1] + [payload]
