@@ -23,6 +23,8 @@ import random
 log = logging.getLogger('zcl.api.event')
 EventPayload = typing.Dict[str, typing.Any]
 
+CACHE = []
+CACHE_MAX_SIZE = 32
 
 class HeroTeam(typing.NamedTuple):
     hero: TempRoster
@@ -179,24 +181,29 @@ class EventView(APIView):
         except TempRoster.DoesNotExist:
             log.error(f"Events: Unable to fetch Roster for hero or team mates in {payload}")
 
-
+    def make_unique_stub(self, payload):
+        stub = {
+            'type': payload['type'],
+            'time': payload['time'],
+            'game_id': payload['game_id']
+        }
+        return stub
 
     def post(self, request: Request):
+        global CACHE
         data = request.data.get('data')
+        stub = self.make_unique_stub(data)
+        if stub in CACHE:
+            return
+
         key = data.get('type')
         user = request.user
         if key is not None:
-            # Dispatch the event to a method handler or default
-            # I almost think signals would be good here, but we can contain logic.
-            #try:
-            print(self)
-            key_func = getattr(self, key)
-            log.debug(f'key function is: {key_func}')
-            key_func(data, user)
-            #except (AttributeError, NameError) as e:
-            #    log.warning(f"Method Handler {key} not defined in EventView")
-            #    self.default_event(data, user)
 
+            key_func = getattr(self, key)
+            key_func(data, user)
+
+        CACHE = CACHE[:CACHE_MAX_SIZE - 1] + [stub]
         return Response(status=status.HTTP_200_OK)
 
     def default_event(self, payload: typing.Dict[str, typing.Any], user: DiscordUser):
