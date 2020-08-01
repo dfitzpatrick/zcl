@@ -258,11 +258,15 @@ class Replay:
             62: 5,
         }
         pid_map = {}
-        for e in self.tracker_events:
-            if e['_gameloop'] > 0:
+        for i, e in enumerate(self.tracker_events):
+            if e['_gameloop'] > 5:
+                # Changed to allow timing for version 5 Bnet patch. Not all spawns
+                # Happen right away anymore. Changed from 0 to 5.
+                # .
                 break
             if e.unit_born and e.unit == 'Bunker':
                 pid_map[e['m_controlPlayerId']] = mapping.get(e.position)
+
         return pid_map
 
 
@@ -427,6 +431,7 @@ class Replay:
         }
         uid_pid_mapping = self.create_uid_pid_mapping()
         pid_position_mapping = self.pid_to_positions()
+        print(pid_position_mapping)
         position_pid_mapping = {v:k for k,v in pid_position_mapping.items()}
 
         for p in self.details.get('m_playerList', []):

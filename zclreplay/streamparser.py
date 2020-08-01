@@ -62,6 +62,7 @@ class StreamParser(Replay):
         if player is None:
             # Commonly mineral crystal spawns that do not have a player attached.
             log.debug(f"Init event passed missing PlayerId. {event.unit} not tracked.")
+            log.debug(event)
             return
 
         # TODO: We don't track cancels here. This technically isn't created yet.
@@ -256,6 +257,10 @@ class StreamParser(Replay):
 
         """
         result = None
+        if owner is None:
+            # Some type of map despawn?
+            return
+
         if owner.winner:
             # The map is de-spawning them at game end. ignore.
             return
