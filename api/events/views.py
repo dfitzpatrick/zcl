@@ -20,6 +20,9 @@ from api.models import Roster as TempRoster
 
 import random
 import ws
+import json
+from zcl.signals import new_match
+
 
 log = logging.getLogger('zcl.api.event')
 EventPayload = typing.Dict[str, typing.Any]
@@ -465,5 +468,5 @@ class EventView(APIView):
                 }
             )
         print('done!')
-        ws.send_notification('match_event', payload)
+        new_match.send(sender=self.__class__, instance=match)
 

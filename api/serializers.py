@@ -112,8 +112,12 @@ class SC2ProfileSerializer(serializers.ModelSerializer):
     #discord_users = DiscordUserSerializer(many=True)
     class Meta:
         model = models.SC2Profile
-        fields = ('id', 'created', 'name', 'profile_url', 'avatar_url',)
+        fields = ('id', 'created', 'name', 'profile_url', 'avatar_url', 'discord_users')
 
+class ProfileWithUsersSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.SC2Profile
+        fields = ('id', 'created', 'name', 'profile_url', 'avatar_url', 'discord_users')
 
 class LeaderboardSerializer(serializers.ModelSerializer):
     profile = SC2ProfileSerializer()
@@ -134,6 +138,8 @@ class RosterSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Roster
         fields = '__all__'
+
+
 
 class OLDMatchSerializer(serializers.ModelSerializer):
     #league = LeagueSerializer()
@@ -216,6 +222,18 @@ class MatchTeamSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class MatchStreamersSerializer(serializers.Serializer):
+    profile = SC2ProfileSerializer()
+    stream = TwitchStreamSerializer()
+
+
+class MatchFullSerializer(serializers.ModelSerializer):
+    rosters = RosterSerializer(many=True)
+    observers = SC2ProfileSerializer(many=True)
+
+    class Meta:
+        model = models.Match
+        fields = '__all__'
 
 class MatchSerializer(serializers.ModelSerializer):
     #rosters = RosterSerializer(many=True)

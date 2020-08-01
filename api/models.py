@@ -222,6 +222,16 @@ class Match(models.Model):
             return self.match_players
         return str(self.id)
 
+    @property
+    def streamers(self):
+        """
+        Finds which players are actively streaming when this method is called
+        Returns
+        -------
+
+        """""
+        return [r.stream_info for r in self.rosters.all() if r.stream_info is not None]
+
 
 
 
@@ -250,8 +260,23 @@ class Roster(models.Model):
     def __str__(self):
         return "[name={0.sc2_profile.name}, t={0.team_number}, p={0.position_number}".format(self)
 
+    @property
+    def stream_info(self) -> typing.Optional[typing.Dict[str, typing.Any]]:
+
+        users = self.sc2_profile.discord_users.all()
+        if users is None:
+            return
+        stream = TwitchStream.objects.filter(active=True, user__in=users).first()
+        if stream is None:
+            return
+        return {
+            'profile': self.sc2_profile,
+            'stream': stream
+        }
+
     class Meta:
         unique_together = ('match', 'sc2_profile', 'team_number', 'position_number')
+
 
 
 

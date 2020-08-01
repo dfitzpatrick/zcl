@@ -5,14 +5,17 @@ from django.db.models.signals import pre_delete, post_delete, post_save
 from django.dispatch.dispatcher import receiver
 
 from accounts.models import SocialAccount, DiscordUser
-from api.models import Replay, TwitchStream, SC2Profile
+from api.models import Replay, TwitchStream, SC2Profile, Match
 from websub.models import Subscription
 from websub.signals import webhook_update
 from websub.views import WebSubView
 from api.tasks import get_profile_details
 from .serializers import TwitchStreamSerializer, DiscordUserSerializer
 from services.twitch import Helix
+from api import serializers
+from zcl.signals import new_match
 import ws
+from api.events.views import EventView
 
 log = logging.getLogger('zcl.api')
 
@@ -117,3 +120,30 @@ def social_account_delete(sender, instance: SocialAccount, **kwargs):
 
     instance.twitch_streams.all().delete()
     # TODO: Any stream stop events
+
+@receiver(new_match, sender=EventView)
+def new_match(sender, instance: Match, **kwargs):
+    """
+    Fires whenever a new match is made. We'll serialize a response with this
+    and Rosters as they are most commonly used.
+    Parameters
+    ----------
+    sender
+    instance
+    kwargs
+
+    Returns
+    -------
+
+    """
+    log.debug('in new_match signal')
+    match = serializers.MatchFullSerializer(instance).data
+    streamers = serializers.MatchStreamersSerializer(instance.streamers, many=True).data
+
+
+    payload = {
+        'match': match,
+        'streamers': streamers
+    }
+    log.debug('sending new match notification')
+    ws.send_notification('new_match', payload)

@@ -52,7 +52,13 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
         await self.send(text_data=payload)
 
+    async def match_event(self, payload):
+        return await self.default_handler(payload)
+
     async def new_match_stream(self, payload):
+        return await self.default_handler(payload)
+
+    async def new_match(self, payload):
         return await self.default_handler(payload)
 
     async def stream_start(self, payload):
