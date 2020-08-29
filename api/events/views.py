@@ -193,12 +193,16 @@ class EventView(APIView):
         }
         return stub
 
+    def stub_in_cache(self, stub):
+        game_id = stub['game_id']
+
     def post(self, request: Request):
         global CACHE
         data = request.data.get('data')
         stub = self.make_unique_stub(data)
         if stub in CACHE:
-            return
+            return Response(status=status.HTTP_200_OK)
+
 
         key = data.get('type')
         user = request.user
@@ -207,7 +211,7 @@ class EventView(APIView):
             key_func = getattr(self, key)
             key_func(data, user)
 
-        CACHE = CACHE[:CACHE_MAX_SIZE - 1] + [stub]
+        CACHE = CACHE[1:CACHE_MAX_SIZE+1] + [stub]
         return Response(status=status.HTTP_200_OK)
 
     def default_event(self, payload: typing.Dict[str, typing.Any], user: DiscordUser):
@@ -320,8 +324,6 @@ class EventView(APIView):
         self.send_event_to_observers(owner_payload, game_id)
 
     def match_end(self, payload: EventPayload, user: DiscordUser):
-        owner_team = self.get_teammates(payload, 'player')
-        self.send_event_to_team(payload, owner_team)
         ws.send_notification('match_event', payload)
         game_id = str(payload['game_id'])
         try:
