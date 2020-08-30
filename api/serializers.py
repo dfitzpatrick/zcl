@@ -223,11 +223,7 @@ class MatchFullSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class MatchSerializer(serializers.ModelSerializer):
-    #rosters = RosterSerializer(many=True)
-    players = serializers.CharField()
-    winners = serializers.CharField()
-    teams = MatchTeamSerializer(source='matchteam_set', many=True)
-    #teams = MatchTeamSerializer(source='teams', many=True)
+
 
     class Meta:
         model = models.Match
