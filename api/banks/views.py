@@ -5,8 +5,10 @@ from .parsing import PlayerBank
 from api.models import Leaderboard
 from api import utils
 from django.db import transaction
+import logging
 import io
 
+log = logging.getLogger('zcl.api.banks')
 
 class BankAPIView(views.APIView):
     parser_classes = (parsers.FileUploadParser,)
@@ -78,14 +80,16 @@ class BankAPIView(views.APIView):
 
         """
         # TODO: Implement sign checking
-        bank: InMemoryUploadedFile = request.FILES['file']
-        data = io.BytesIO(bank.read())
-        pb = PlayerBank(data)
-        if pb.id is None:
+        try:
 
-            return http.HttpRequest(status=status.HTTP_200_OK)
-        self._update(pb)
-        return http.HttpResponse(status=status.HTTP_200_OK)
+            bank: InMemoryUploadedFile = request.FILES['file']
+            data = io.BytesIO(bank.read())
+            pb = PlayerBank(data)
+            self._update(pb)
+            return http.HttpResponse(status=status.HTTP_200_OK)
+        except Exception as e:
+            log.error(e)
+            return http.HttpResponse(status=status.HTTP_200_OK)
 
 
 
