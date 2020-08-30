@@ -70,6 +70,9 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     async def user_update(self, payload):
         return await self.default_handler(payload)
 
+    async def match_delete(self, payload):
+        return await self.default_handler(payload)
+
 
 class StreamerConsumer(NotificationConsumer):
     async def connect(self):

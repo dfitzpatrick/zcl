@@ -209,6 +209,10 @@ class Match(models.Model):
     # Track Observers, either for 'initial' matches or just to know for later.
     observers = models.ManyToManyField(SC2Profile, blank=True, related_name='observers')
 
+    # Track connected clients. Mainly for scaffolding matches
+    clients = models.ManyToManyField(DiscordUser, blank=True, null=True, related_name='clients')
+
+
 
     def __str__(self):
         """
@@ -277,20 +281,6 @@ class Roster(models.Model):
     class Meta:
         unique_together = ('match', 'sc2_profile', 'team_number', 'position_number')
 
-
-
-
-
-class MatchClient(models.Model):
-    """
-    These are used to track active players with the cli that are broadcasting.
-    """
-    created = models.DateTimeField(auto_created=True, auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
-
-    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='clients')
-    user = models.ForeignKey(DiscordUser, on_delete=models.CASCADE, related_name='+')
-    connected = models.BooleanField(default=True)
 
 class MatchEvent(models.Model):
     """

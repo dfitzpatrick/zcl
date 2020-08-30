@@ -121,6 +121,12 @@ def social_account_delete(sender, instance: SocialAccount, **kwargs):
     instance.twitch_streams.all().delete()
     # TODO: Any stream stop events
 
+@receiver(post_delete, sender=Match)
+def match_delete(sender, instance: Match, **kwargs):
+    serialized = serializers.MatchSerializer(instance)
+    ws.send_notification(ws.types.MATCH_DELETE, serialized.data)
+
+
 @receiver(new_match, sender=EventView)
 def new_match(sender, instance: Match, **kwargs):
     """

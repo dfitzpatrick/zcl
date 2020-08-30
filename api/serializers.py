@@ -167,19 +167,6 @@ class MatchEventSerializer(serializers.ModelSerializer):
         model = models.MatchEvent
         exclude = ('match', 'raw',)
 
-
-
-
-class MatchClientSerializer(serializers.ModelSerializer):
-    rosters = serializers.CharField()
-
-    # events = MatchEventSerializer()
-
-    class Meta:
-        model = models.MatchClient
-        fields = '__all__'
-
-
 class UnitStatSerializer(serializers.ModelSerializer):
 
     class Meta:

@@ -238,7 +238,7 @@ class EventView(APIView):
         }
         return names.get(color, 'Unknown')
 
-
+    @transaction.atomic()
     def player_leave(self, payload: EventPayload, user: DiscordUser):
         owner_team = self.get_teammates(payload, 'player')
         game_id = str(payload['game_id'])
@@ -256,9 +256,25 @@ class EventView(APIView):
             'alert_message': owner_message,
             'alert_avatar': owner_team.hero.sc2_profile.avatar_url
         }
+
+
         owner_payload.update(payload)
         self.send_event_to_team(owner_payload, owner_team)
         self.send_event_to_observers(owner_payload, game_id)
+
+        # Check if this was a connected client
+        try:
+            match = TempMatch.objects.get(id=game_id)
+            for u in owner_team.hero.sc2_profile.discord_users.all():
+                if u in match.clients.all():
+                    match.clients.remove(u)
+                    match.save()
+            # If there are no more connected clients, no more events will be streamed.
+            if match.clients.count() == 0:
+                match.delete()
+        except TempMatch.DoesNotExist:
+            pass
+
 
     def player_died(self, payload: EventPayload, user: DiscordUser):
         game_id = str(payload['game_id'])
@@ -472,3 +488,11 @@ class EventView(APIView):
         print('done!')
         new_match.send(sender=self.__class__, instance=match)
 
+    @transaction.atomic()
+    def match_end(self, payload: typing.Dict[str, typing.Any], user: DiscordUser):
+        game_id = str(payload['game_id'])
+        try:
+            match = TempMatch.objects.get(id=game_id)
+            match.delete()
+        except TempMatch.DoesNotExist:
+            pass
