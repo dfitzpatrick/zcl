@@ -123,7 +123,7 @@ def social_account_delete(sender, instance: SocialAccount, **kwargs):
 
 @receiver(post_delete, sender=Match)
 def match_delete(sender, instance: Match, **kwargs):
-    serialized = serializers.MatchSerializer(instance)
+    serialized = serializers.BasicMatchSerializer(instance)
     ws.send_notification(ws.types.MATCH_DELETE, serialized.data)
 
 

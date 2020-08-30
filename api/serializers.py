@@ -222,8 +222,18 @@ class MatchFullSerializer(serializers.ModelSerializer):
         model = models.Match
         fields = '__all__'
 
-class MatchSerializer(serializers.ModelSerializer):
 
+class MatchSerializer(serializers.ModelSerializer):
+    players = serializers.CharField()
+    winners = serializers.CharField()
+    teams = MatchTeamSerializer(source='matchteam_set', many=True)
+
+    class Meta:
+        model = models.Match
+        fields = '__all__'
+
+
+class BasicMatchSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Match
