@@ -17,6 +17,7 @@ from api import utils
 from api.models import Match as TempMatch
 
 from api.models import Roster as TempRoster
+from datetime import datetime, timedelta, timezone
 
 import random
 import ws
@@ -485,6 +486,13 @@ class EventView(APIView):
                     'color': p['color'],
                 }
             )
+            # Look for current connected clients
+            for user in profile.discord_users.all():
+                heartbeat = user.client_heartbeat
+                now = datetime.now(timezone.utc)
+                if now - heartbeat < timedelta(minutes=10):
+                    match.clients.add(user)
+
         print('done!')
         new_match.send(sender=self.__class__, instance=match)
 
