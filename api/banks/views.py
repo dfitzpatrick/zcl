@@ -81,6 +81,9 @@ class BankAPIView(views.APIView):
         bank: InMemoryUploadedFile = request.FILES['file']
         data = io.BytesIO(bank.read())
         pb = PlayerBank(data)
+        if pb.id is None:
+
+            return http.HttpRequest(status=status.HTTP_200_OK)
         self._update(pb)
         return http.HttpResponse(status=status.HTTP_200_OK)
 
