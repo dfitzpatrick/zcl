@@ -129,16 +129,8 @@ class DiscordUserView(viewsets.ModelViewSet):
 class SC2ProfileUserView(viewsets.ModelViewSet):
     serializer_class = serializers.SC2ProfileSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-    queryset = annotations.leaderboards.qs_with_ranking()
-
-    @action(methods=['GET'], detail=True)
-    def users(self, request, *args, **kwargs):
-        profile: models.SC2Profile = self.get_object()
-        users = profile.discord_users.all()
-
-        serializer = serializers.DiscordUserSerializer(users, many=True)
-        return Response(serializer.data)
-
+    queryset = models.SC2Profile.objects.all()
+    filterset_class = filters.ProfileFilter
 
 class GuildView(viewsets.ModelViewSet):
     serializer_class = serializers.GuildSerializer

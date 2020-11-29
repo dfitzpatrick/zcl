@@ -10,7 +10,7 @@ from .events.views import EventView
 
 router = routers.DefaultRouter()
 router.register('users', views.DiscordUserView)
-router.register('toons', views.SC2ProfileUserView)
+router.register('profiles', views.SC2ProfileUserView)
 router.register('guilds', views.GuildView)
 router.register('leagues', views.LeagueView)
 router.register('leaderboards', views.LeaderboardView)

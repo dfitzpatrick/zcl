@@ -69,6 +69,16 @@ class ListFilter(filters.Filter):
             query |= Q(**{self.field_name: v})
         return qs.filter(query)
 
+class CharFieldContainsFilter(filters.Filter):
+    def __init__(self, **kwargs):
+        super(CharFieldContainsFilter, self).__init__(**kwargs)
+
+    def filter(self, qs, value):
+        if value is None:
+            return qs
+        query = Q(**{f"{self.field_name}__icontains": value})
+        print(query)
+        return qs.filter(query)
 
 class LeaderboardListFilter(filters.Filter):
 
@@ -119,4 +129,11 @@ class GameEventFilter(filters.FilterSet):
 
     class Meta:
         model = api_models.GameEvent
+        fields = '__all__'
+
+class ProfileFilter(filters.FilterSet):
+    name = CharFieldContainsFilter(field_name='name')
+
+    class Meta:
+        model = api_models.SC2Profile
         fields = '__all__'

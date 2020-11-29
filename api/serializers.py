@@ -112,7 +112,7 @@ class SC2ProfileSerializer(serializers.ModelSerializer):
     #discord_users = DiscordUserSerializer(many=True)
     class Meta:
         model = models.SC2Profile
-        fields = ('id', 'created', 'name', 'profile_url', 'avatar_url', 'discord_users')
+        fields = ('id', 'created', 'name', 'profile_url', 'avatar_url')
 
 class ProfileWithUsersSerializer(serializers.ModelSerializer):
     class Meta:
