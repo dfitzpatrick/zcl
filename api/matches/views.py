@@ -14,7 +14,7 @@ class MatchView(viewsets.ModelViewSet):
 
     serializer_class = serializers.MatchSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-    #filterset_class = filters.MatchFilter
+    #filterset_class = filters.MatchFilter ok
 
 
 
