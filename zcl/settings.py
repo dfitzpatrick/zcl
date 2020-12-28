@@ -100,7 +100,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://localhost:3000",
     "http://127.0.0.1:3000",
     'http://zclbeta.com',
-    'http://zclleagues.com'
+    'http://zcleagues.com'
 ]
 CORS_ORIGIN_WHITELIST = CORS_ALLOWED_ORIGINS
 CORS_ALLOW_CREDENTIALS = True
