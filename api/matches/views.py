@@ -71,6 +71,8 @@ class MatchView(viewsets.ModelViewSet):
         ranked = self.request.query_params.get('ranked', '')
         before_date = self.request.query_params.get('before_date', '')
         after_date = self.request.query_params.get('after_date', '')
+        sort = self.request.query_params.get('sort', '')
+        sort = '-match_date' if sort == '' else sort
         primary_filters = Q()
         if league != '':
             primary_filters &= Q(league__id=league)
@@ -109,7 +111,7 @@ class MatchView(viewsets.ModelViewSet):
                 profile_segments__unit_stats__unit__map_name__in=filter_units,
 
             )
-
+            .order_by(sort)
             .annotate(
                 elo_average=Avg(
                     'rosters__sc2_profile__leaderboards__elo',
@@ -155,6 +157,7 @@ class MatchView(viewsets.ModelViewSet):
                     output_field=IntegerField(),
                 ),
             )
+
         )
         # Seems to be an expensive operation. From 450ms to 4500
         if len(q_players_winners) > 0:
