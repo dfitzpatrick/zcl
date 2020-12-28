@@ -160,7 +160,7 @@ export default function AutoSelector<T>(props: IAutoSelectorProps<T>) {
         loading={props.loading}
         freeSolo={false}
         multiple={props.isMulti}
-        value={selections}
+      
         disableListWrap
         ListboxComponent={ListboxComponent as React.ComponentType<React.HTMLAttributes<HTMLElement>>}
         options={props.data}
