@@ -3,10 +3,48 @@ import logging
 from django.db.models import Q
 from django.db.models import When, Case, IntegerField
 from django_filters import rest_framework as filters
+from dateutil import parser
 
 from api import models as api_models
 
 log = logging.getLogger(__name__)
+
+
+class CSVMembershipOf(filters.Filter):
+
+    def __init__(self, *, field_name, dunder_method="icontains", **kwargs):
+        super(CSVMembershipOf, self).__init__(field_name=field_name, **kwargs)
+        self.dunder_method = dunder_method
+
+    def filter(self, qs, value):
+        if not hasattr(value, 'split'):
+            return qs
+        value_set = value.split(',')
+        query = Q()
+        for v in value_set:
+            query &= Q(**{f"{self.field_name}__{self.dunder_method}": v})
+
+        return qs.filter(query)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def limit_filter(qs, name, value):
     """
@@ -80,6 +118,39 @@ class CharFieldContainsFilter(filters.Filter):
         print(query)
         return qs.filter(query)
 
+class BeforeDateFilter(filters.Filter):
+    def __init__(self, **kwargs):
+        super(BeforeDateFilter, self).__init__(**kwargs)
+        
+    def filter(self, qs, value):
+        if value is None:
+            return qs
+        query = Q(**{f"{self.field_name}__lte": value})
+        return qs.filter(query)
+    
+class GenericFilter(filters.Filter):
+    def __init__(self, *, dunder, **kwargs):
+        super(GenericFilter, self).__init__(**kwargs)
+        self.dunder = dunder
+
+    def filter(self, qs, value):
+        if value is None or self.dunder is None:
+            return qs
+        q = Q(**{f"{self.field_name}__{self.dunder}": value})
+        return qs.filter(q)
+
+class AfterDateFilter(GenericFilter):
+    def __init__(self, **kwargs):
+        super(AfterDateFilter, self).__init__(dunder="gte", **kwargs)
+
+    def filter(self, qs, value):
+        try:
+            value = parser.parse(value)
+            return super(AfterDateFilter, self).filter(qs, value)
+        except Exception as e:
+            print(f"crap: {e}")
+            return qs
+
 class LeaderboardListFilter(filters.Filter):
 
     def filter(self, qs, value):
@@ -103,8 +174,10 @@ class LeaderboardListFilter(filters.Filter):
 
 class MatchFilter(filters.FilterSet):
     player = MatchHasPlayer()
-    anyplayers = MatchHasAnyPlayers()
+    players = MatchHasAnyPlayers()
+    start_date = filters.DateFilter()
     max = filters.Filter(field_name='id', method=limit_filter)
+    match_after = AfterDateFilter(field_name="match_date")
 
     class Meta:
         model = api_models.Match

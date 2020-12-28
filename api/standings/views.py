@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
 from rest_framework.views import APIView
-from api.models import Segment, Match, MatchMessage
+from api.models import Segment, Match, MatchMessage, SegmentProfileItem
 from api.serializers import MatchSerializer
 from django.contrib.postgres.aggregates import StringAgg
 
@@ -118,6 +118,64 @@ class AbbreviatedMatchSerializer(serializers.Serializer):
     #    fields = ('id', 'players', 'winners',)
 
 class ProfileStatsSerializer(serializers.Serializer):
+    avg_victim = serializers.DecimalField(max_digits=2, decimal_places=1)
+    avg_all_chats = serializers.IntegerField()
+
+    class Meta:
+        fields = ('id', 'name', 'avg_victim', 'avg_all_chats')
+
+class ProfileStats(APIView):
+
+    def get(self, request: Request, profile_id: str):
+        profile = None
+        result = {}
+
+        try:
+            profile = SC2Profile.objects.get(id=profile_id)
+        except SC2Profile.DoesNotExist:
+            return Response("Profile does not exist", status=status.HTTP_400_BAD_REQUEST)
+
+        ms = Match.objects.annotate(players=Count('rosters', distinct=True)).filter(status='final', players=8)
+        ge_window = Window(expression=Rank(), partition_by=[F('match__match_date')],
+                           order_by=(F('match__match_date'), F('game_time')))
+        bunkers_cancelled = profile.game_events.filter(match__in=ms, key__id__istartswith='bunker').annotate(
+            rank=ge_window).annotate(
+            cancels=Case(When(Q(rank=2) & Q(key='bunker_cancelled'), then=1), default=0, output_field=DecimalField())).aggregate(Sum('cancels'))['cancels__sum']
+
+        aggregates = ms.aggregate(
+            avg_victim=Avg(
+                'match_losers__victim_number',
+                filter=Q(match_losers__profile=profile), distinct=True
+            ),
+            wins=Count('match_winners', filter=Q(match_winners__profile=profile), distinct=True)
+
+
+        )
+        total_matches = profile.rosters.filter(match__in=ms).count()
+        all_chat_qs = MatchMessage.objects.filter(profile=profile, match__in=ms, message_type='all_chat')
+        message_aggregates = all_chat_qs.aggregate(
+            count=Count('message'),
+            num_ggs=Count('message', filter=Q(message__icontains='gg'))
+        )
+        profile_segments_qs = SegmentProfileItem.objects.filter(profile=profile, match__in=ms)
+        segment_aggregates = profile_segments_qs.aggregate(
+            num_first_team_eliminated=Count('match', filter=Q(eliminated=True, segment__measure='three_teams'), distinct=True),
+            num_times_final=Count('match', filter=Q(eliminated=False, segment__measure='two_teams'), distinct=True)
+        )
+        result['total_matches'] = total_matches
+        result['wins'] = aggregates['wins']
+        result['losses'] =  total_matches - aggregates['wins']
+        result['avg_gg_all_chat'] = message_aggregates['num_ggs'] / total_matches if total_matches > 0 else 0
+        result['avg_victim'] = aggregates['avg_victim']
+        result['avg_all_chats'] = message_aggregates['count'] / total_matches if total_matches > 0 else 0
+        result['avg_first_bunker_cancelled'] = (bunkers_cancelled / total_matches) if total_matches > 0 else 0
+        result['avg_first_team_eliminated'] = segment_aggregates['num_first_team_eliminated'] / total_matches if total_matches > 0 else 0
+        result['avg_times_in_final'] = segment_aggregates['num_times_final'] / total_matches if total_matches > 0 else 0
+        result['win_rate_from_final'] = result['wins'] / segment_aggregates['num_times_final'] if segment_aggregates['num_times_final'] > 0 else 0
+        return Response(result, status=200)
+
+
+class ProfileStatsSerializer2(serializers.Serializer):
 
     id = serializers.CharField()
     name = serializers.CharField()
@@ -134,7 +192,7 @@ class ProfileStatsSerializer(serializers.Serializer):
     class Meta:
         fields = ('id', 'name')
 
-class ProfileStats(APIView):
+class ProfileStats2(APIView):
 
     def get(self, request: Request, profile_id: str):
         profile = None

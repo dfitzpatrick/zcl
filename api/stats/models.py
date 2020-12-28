@@ -65,7 +65,7 @@ class ChartPoints(WithTimeStamp):
 
 
 class Segment(WithTimeStamp):
-    measure = models.CharField(max_length=100)
+    measure = models.CharField(max_length=100, db_index=True)
     match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="segments")
     game_time = models.FloatField()
     valid = models.BooleanField()
@@ -74,9 +74,9 @@ class Segment(WithTimeStamp):
 
 class SegmentProfileItem(WithTimeStamp):
     segment = models.ForeignKey(Segment, on_delete=models.CASCADE, related_name="profiles")
-    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="match")
-    profile = models.ForeignKey(SC2Profile, on_delete=models.CASCADE, related_name="+")
-    lane = models.ForeignKey(SC2Profile, on_delete=models.SET_NULL, related_name="+", null=True)
+    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="profile_segments")
+    profile = models.ForeignKey(SC2Profile, on_delete=models.CASCADE, related_name="profile_segments")
+    lane = models.ForeignKey(SC2Profile, on_delete=models.SET_NULL, related_name="lane_segments", null=True)
     left_game = models.BooleanField(default=False)
     eliminated = models.BooleanField(default=False)
     eliminated_by = models.ForeignKey(SC2Profile, on_delete=models.SET_NULL, null=True)
@@ -96,9 +96,9 @@ class SegmentUnitStat(WithTimeStamp):
     segment_profile = models.ForeignKey(SegmentProfileItem, on_delete=models.CASCADE, related_name="unit_stats")
 
     unit = models.ForeignKey('Unit', on_delete=models.CASCADE)
-    segment = models.ForeignKey(Segment, on_delete=models.CASCADE, related_name="+")
+    segment = models.ForeignKey(Segment, on_delete=models.CASCADE, related_name="+", db_index=True)
 
-    created = models.IntegerField(default=0)
+    created = models.IntegerField(default=0, db_index=True)
     lost = models.IntegerField(default=0)
     killed = models.IntegerField(default=0)
     cancelled = models.IntegerField(default=0)

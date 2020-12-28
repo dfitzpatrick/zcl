@@ -1,10 +1,13 @@
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 from django.conf import settings
 from django.contrib import admin
 from django.shortcuts import render
 from django.urls import path, include, re_path
 import debug_toolbar
-# Just serve the react app from here.
+# Just serve the react app from here.+
+
+@ensure_csrf_cookie
 def index(request):
     return render(request, "build/index.html")
 

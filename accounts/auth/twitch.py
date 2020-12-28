@@ -39,7 +39,7 @@ class TwitchAuthView(LoginRequiredMixin, AuthView):
         if models.SocialAccount.objects.filter(provider='twitch', user=request.user, username=username).count() > 0:
             # Duplicate Account.
             sa.delete()
-            return redirect('/portal/connections')
+            return redirect('/account?tabId=twitchConnections')
         else:
             sa.username = username
             sa.save()
@@ -54,7 +54,7 @@ class TwitchAuthView(LoginRequiredMixin, AuthView):
 
             }
         )
-        return redirect('/portal/connections')
+        return redirect('/account?tabId=twitchConnections')
 
     def on_exchange_fail(self, request: http.HttpRequest, response: requests.Response) -> http.HttpResponse:
         response.raise_for_status()

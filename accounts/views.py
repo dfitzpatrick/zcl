@@ -10,12 +10,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api import serializers
-from api.permissions import IsOwner
+from api.permissions import IsOwner, IsConnectionOwner
 from .models import DiscordUser
 from .models import SocialAccount
 from .serializers import SocialAccountSerializer
 from django.shortcuts import redirect
 import logging
+from django.contrib.auth.models import AnonymousUser
 
 log = logging.getLogger('zcl.accounts.views')
 
@@ -80,9 +81,9 @@ class me(APIView):
 
     def get(self, request):
         user: DiscordUser = request.user
-        print(user.id)
+        if isinstance(user, AnonymousUser):
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
         data = serializers.DiscordUserSerializer(user).data
-        print(data)
         return Response(data, status=status.HTTP_200_OK)
 
 
@@ -101,11 +102,11 @@ def logout(request):
     return redirect(settings.SITE_URL)
 
 class Connections(viewsets.ModelViewSet):
-    permission_classes = (IsOwner,)
+
     serializer_class = SocialAccountSerializer
 
     def get_queryset(self):
-        return SocialAccount.objects.filter(user=self.request.user).exclude(provider='discord')
+        return SocialAccount.objects.filter(user=self.request.user)
 
 class Connections2(viewsets.ViewSet):
     permission_classes = (permissions.IsAuthenticated, )

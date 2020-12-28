@@ -12,6 +12,11 @@ services:
       - zclbackend_postgres_data:/var/lib/postgresql/data/
     ports:
       - "5432:5432"
+    command:
+      - "postgres"
+      - "-c"
+      - "work_mem=64MB"
+
   web: &project
     env_file:
       - ./.env

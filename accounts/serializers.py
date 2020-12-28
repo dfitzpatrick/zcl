@@ -6,4 +6,4 @@ from .models import SocialAccount
 class SocialAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = SocialAccount
-        fields = '__all__'
+        exclude=('extra_data',)

@@ -251,7 +251,7 @@ class Roster(models.Model):
 
     match = models.ForeignKey('Match', on_delete=models.CASCADE, related_name='rosters')
     sc2_profile = models.ForeignKey('SC2Profile', on_delete=models.CASCADE, related_name='rosters')
-    lane = models.ForeignKey(SC2Profile, on_delete=models.SET_NULL, related_name="+", null=True)
+    lane = models.ForeignKey(SC2Profile, on_delete=models.SET_NULL, related_name="lane_rosters", null=True)
     team_number = models.IntegerField()
     position_number = models.IntegerField()
     color = models.CharField(max_length=50, blank=True, default='')
@@ -335,7 +335,8 @@ class Season(models.Model):
     description = models.TextField(blank=True)
 
     def __str__(self):
-        return f"[id={self.id}, name={self.name}, league={self.league.name}]"
+        return self.name
+        #return f"[id={self.id}, name={self.name}, league={self.league.name}]"
 
     class Meta:
         unique_together = ('league', 'name',)
@@ -359,7 +360,7 @@ class Unit(models.Model):
     created = models.DateTimeField(auto_created=True, auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
-    map_name = models.CharField(max_length=100, unique=True)
+    map_name = models.CharField(max_length=100, unique=True, db_index=True)
     real_name = models.CharField(max_length=100, null=True)
     value = models.IntegerField(default=0)
     cost = models.IntegerField(default=0)

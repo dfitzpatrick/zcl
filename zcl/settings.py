@@ -22,7 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', cast=bool, default=False)
 SECURE_SSL_REDIRECT = False
-ALLOWED_HOSTS = ['*']
+
 AUTH_USER_MODEL = 'accounts.DiscordUser'
 ROOT_URLCONF = 'zcl.urls'
 CSRF_COOKIE_SECURE = False
@@ -93,12 +93,18 @@ PUBLIC_SITE_URL = config('PUBLIC_SITE_URL')
 
 FRONTEND = "http://localhost:8000/"
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+    "http://localhost:3000",
+    "https://localhost:3000",
+    "http://127.0.0.1:3000"
+]
+CORS_ORIGIN_WHITELIST = CORS_ALLOWED_ORIGINS
+CORS_ALLOW_CREDENTIALS = True
+
 CSRF_TRUSTED_ORIGINS = ['localhost:3000']
-CORS_ORIGIN_WHITELIST = (
-    'http://localhost:3000',
-    'https://localhost:3000',
-)
+
 
 """
 AMAZON WEB SERVICES
@@ -281,13 +287,13 @@ sentry_sdk.init(
 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-    #'django.middleware.csrf.CsrfViewMiddleware',
     'zcl.middleware.DisableCSRFMiddleware',
+    #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',

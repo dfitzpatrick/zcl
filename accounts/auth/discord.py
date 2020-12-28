@@ -68,8 +68,8 @@ class DiscordAuthView(AuthView):
         else:
             # TODO: Email Unverified/Missing Redirect.
             msg = "Your email address for your discount account must be verified."
-            return redirect(f'/zcl/error?code=401&msg={msg}')
-        return redirect('/portal')
+            return redirect(f'/error?code=401&msg={msg}')
+        return redirect('/account')
 
 def discord_api(endpoint, token) -> requests.Response:
     """
