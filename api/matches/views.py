@@ -84,10 +84,10 @@ class MatchView(viewsets.ModelViewSet):
             primary_filters &= Q(ranked=ranked == '1')
         if before_date != '':
             bd = dateutil.parser.parse(before_date)
-            primary_filters = Q(match_date__lte=bd)
+            primary_filters &= Q(match_date__lte=bd)
         if after_date != '':
             ad = dateutil.parser.parse(after_date)
-            primary_filters = Q(match_date__gte=ad)
+            primary_filters &= Q(match_date__gte=ad)
         queryset = (
             models.Match
                 .objects
