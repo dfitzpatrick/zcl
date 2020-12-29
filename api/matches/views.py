@@ -121,11 +121,11 @@ class MatchView(viewsets.ModelViewSet):
                 mid=F('aggregates__mid'),
             )
 
-        ).filter(primary_filters).order_by(sort)
+        ).filter(primary_filters)
         # Seems to be an expensive operation. From 450ms to 4500
         if len(q_players_winners) > 0:
-            return queryset.filter(q_players_winners)
-        return queryset
+            queryset = queryset.filter(q_players_winners)
+        return queryset.order_by(sort)
 
 
     @action(methods=['get'], detail=True)
