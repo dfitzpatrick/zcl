@@ -129,6 +129,7 @@ class MatchView(viewsets.ModelViewSet):
                     distinct=True
                 ),
 
+
                 tanks=Sum(
                     'profile_segments__unit_stats__created',
 
@@ -141,11 +142,12 @@ class MatchView(viewsets.ModelViewSet):
                     output_field=IntegerField()
                 ),
                 nukes=Sum(
-                    'profile_segments__unit_stats__created',
-                    distinct=True,
+                    'profile_segments__unit_stats__cancelled',
                     filter=Q(
+                        profile_segments__segment__measure='final',
                         profile_segments__unit_stats__unit__map_name='Nuke',
                     ),
+                    distinct=True,
                     output_field=IntegerField()
                 ),
                 turrets=Sum(

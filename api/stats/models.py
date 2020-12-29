@@ -89,7 +89,8 @@ class SegmentProfileItem(WithTimeStamp):
     tech_damage_value = models.IntegerField(default=0) # m_scoreValueMineralsKilledTechnology
 
 
-
+    def __str__(self):
+        return "Segment " + self.profile.name
 
 
 class SegmentUnitStat(WithTimeStamp):

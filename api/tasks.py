@@ -20,6 +20,19 @@ from django.db.utils import IntegrityError
 log = get_task_logger('zcl.api.tasks')
 
 
+def aggregate_match_stats(players):
+    results = {}
+    for p in players:
+        overview = p.unit_stats.overview
+        for k in overview.keys():
+            if k not in results.keys():
+                results[k] = {'created': 0, 'lost': 0, 'cancelled': 0}
+
+            results[k]['created'] += overview.get(k, {}).get('created', 0)
+            results[k]['lost'] += overview.get(k, {}).get('lost', 0)
+            results[k]['cancelled'] += overview.get(k, {}).get('cancelled', 0)
+    return results
+
 def get_or_create_team(profiles: typing.List[models.SC2Profile]) -> models.Team:
     """
     We use a m2m relationship on teams because it makes sense, but we want team
@@ -87,7 +100,6 @@ def do_parse(replay_model, replay: StreamParser):
 
     game_id = replay.game_id
 
-
     match, match_created = models.Match.objects.get_or_create(
         id=game_id,
         defaults={
@@ -111,6 +123,7 @@ def do_parse(replay_model, replay: StreamParser):
         match.matchteam_set.all().delete()
         match.match_losers.all().delete()
         match.messages.all().delete()
+
 
     # Create team objects
 
@@ -175,6 +188,7 @@ def do_parse(replay_model, replay: StreamParser):
                     'valid': payload.valid,
                 }
             )
+
             for p in state.players:
                 segment_profile = utils.fetch_or_create_profile(p, profile_cache)
                 segment_lane = utils.fetch_or_create_profile(p.lane, profile_cache)
@@ -196,7 +210,7 @@ def do_parse(replay_model, replay: StreamParser):
                         'tech_damage_value': p.unit_stats.tech_damage_value
                     }
                 )
-                for u in p.unit_stats.totals[p].keys():
+                for u in p.unit_stats.overview.keys():
                     # Just grab this current player stats and commit that
                     # to the database. No vs data.
                     unit, _ = models.Unit.objects.get_or_create(
@@ -206,11 +220,15 @@ def do_parse(replay_model, replay: StreamParser):
                         segment_profile=profile_item,
                         segment=segment,
                         unit=unit,
-                        created=p.unit_stats.totals[p][u].get('created', 0),
-                        killed=p.unit_stats.totals[p][u].get('killed', 0),
-                        lost=p.unit_stats.totals[p][u].get('lost', 0),
-                        cancelled=p.unit_stats.totals[p][u].get('cancelled', 0)
+                        created=p.unit_stats.overview.get(u, {}).get('created', 0),
+                        killed=p.unit_stats.overview.get(u, {}).get('killed', 0),
+                        lost=p.unit_stats.overview.get(u, {}).get('lost', 0),
+                        cancelled=p.unit_stats.overview.get(u, {}).get('cancelled', 0)
                     )
+
+
+
+
         if isinstance(payload, replayobjects.UpgradeEvent):
             container = []
             for player_unit_upgrades in state.players:
@@ -251,6 +269,20 @@ def do_parse(replay_model, replay: StreamParser):
         profile = utils.fetch_or_create_profile(p, profile_cache)
         lane_profile = utils.fetch_or_create_profile(p.lane, profile_cache)
         killer = utils.fetch_or_create_profile(p.killer, profile_cache)
+
+        if p.name != profile.name:
+            # Track the name change
+            alias, created = models.ProfileAlias.objects.get_or_create(
+                profile=profile,
+                name=p.name,
+                defaults={
+                    'name': p.name
+                }
+            )
+            if not created:
+                if replay.game_time < alias.created:
+                    alias.created = replay.game_time
+                    alias.save()
 
         models.Roster.objects.update_or_create(
             match=match,
@@ -307,6 +339,25 @@ def do_parse(replay_model, replay: StreamParser):
         print('match is')
         print(match)
         print(f'Match created: {match_created}')
+
+    # Get match aggregates
+    match_aggregates = aggregate_match_stats(replay.players)
+    models.MatchAggregates.objects.update_or_create(
+        match=match,
+        defaults={
+            'tanks': match_aggregates.get('SiegeBreakerSieged', {}).get('created',0),
+            'nukes': match_aggregates.get('Nuke', {}).get('created', 0),
+            'turrets': match_aggregates.get('AutoTurret', {}).get('created', 0),
+            'bunkers': match_aggregates.get('Bunker', {}).get('created', 0),
+            'scv': match_aggregates.get('SCV', {}).get('created', 0),
+            'mid': match_aggregates.get('Ghost', {}).get('created', 0) > 0 or match_aggregates.get('Spectre', {}).get('created', 0) > 0,
+            'sensors': match_aggregates.get('SensorTower', {}).get('created', 0),
+            'supply_depots': match_aggregates.get('SupplyDepot', {}).get('created', 0),
+            'shields': match_aggregates.get('HiveMindEmulator', {}).get('created', 0),
+            'names': ', '.join([rp.name for rp in replay.players]),
+            'winners': ', '.join([rp.name for rp in replay.players if rp.winner])
+        }
+    )
 
     utils.gzip_chart_to_s3(unit_upgrades, match_id=replay.game_id, name='upgrades')
     feed = [p.feed for p in replay.players]

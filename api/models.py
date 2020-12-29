@@ -238,8 +238,27 @@ class Match(models.Model):
 
 
 
+class MatchAggregates(models.Model):
+    """
+    Cheating here.
+    Keep aggreagates for quicker rendering of match lists
+    """
+    match = models.OneToOneField(Match, on_delete=models.CASCADE, related_name='aggregates')
+    nukes = models.IntegerField(default=0)
+    tanks = models.IntegerField(default=0)
+    turrets = models.IntegerField(default=0)
+    bunkers = models.IntegerField(default=0)
+    scv = models.IntegerField(default=0)
+    sensors = models.IntegerField(default=0)
+    shields = models.IntegerField(default=0)
+    supply_depots = models.IntegerField(default=0)
+    names = models.CharField(max_length=300, blank=True, default="")
+    winners = models.CharField(max_length=200, blank=True, default="")
+    mid = models.BooleanField(default=False)
 
-
+class ProfileAlias(WithTimeStamp):
+    profile = models.ForeignKey(SC2Profile, on_delete=models.CASCADE, related_name='aliases')
+    name = models.CharField(max_length=300)
 
 
 class Roster(models.Model):
