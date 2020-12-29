@@ -61,7 +61,15 @@ export interface IMatchResult {
     season: number,
     tanks: number|null,
     turrets: number|null,
+    bunkers: number|null,
+    sensors: number|null,
+    shields: number|null,
+    supply_depots: number|null,
     nukes: number|null,
+    names: string|null,
+    scv: number|null,
+    alt_winners: string|null,
+    mid: boolean|null,
     elo_average: number
 
 }

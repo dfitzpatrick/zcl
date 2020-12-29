@@ -12,13 +12,23 @@ class MatchSerializer(serializers.ModelSerializer):
     nukes = serializers.IntegerField()
     tanks = serializers.IntegerField()
     turrets = serializers.IntegerField()
+    bunkers = serializers.IntegerField()
+    scv = serializers.IntegerField()
+    sensors = serializers.IntegerField()
+    shields = serializers.IntegerField()
+    supply_depots = serializers.IntegerField()
+    names = serializers.CharField(max_length=300)
+    alt_winners = serializers.CharField(max_length=200)
+    mid = serializers.BooleanField()
     elo_average = serializers.IntegerField()
+
     class Meta:
         model = models.Match
         fields = (
             "id", "created", "updated", "match_date", "players", "winners",
             "game_length", 'league', 'season', "nukes", "tanks", "turrets",
-            "elo_average"
+            "elo_average", 'bunkers', 'scv', 'sensors', 'shields', 'supply_depots',
+            'names', 'alt_winners', 'mid'
         )
 
 class MatchTeamRosterSerializer(serializers.ModelSerializer):

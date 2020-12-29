@@ -100,7 +100,8 @@ export default function TeamTable(props: ITeamTableProps) {
           {
               title: 'Players',
               field: 'profiles',
-              render: (d) => playersRender(d)
+              render: (d) => playersRender(d),
+              sorting: false
           },
           {
             title: 'Team ELO',

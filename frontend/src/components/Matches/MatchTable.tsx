@@ -15,7 +15,10 @@ import TankIcon from '../../assets/img/unitIcons/tank.png'
 import TurretIcon from '../../assets/img/unitIcons/turret.png'
 import TimerIcon from '@material-ui/icons/Timer'
 import MarginContainer from '../MarginContainer/MarginContainer'
-
+import MidIcon from '../../assets/img/unitIcons/ghost.png'
+import BunkerIcon from '../../assets/img/unitIcons/bunker.png'
+import SCVIcon from '../../assets/img/unitIcons/scv.png'
+import SupplyDepotIcon from '../../assets/img/unitIcons/supplydepot.png'
 interface IMatchProps extends IFilteredTableOptionalProps<IMatchResult> {
   filters?: IMatchFilters
 }
@@ -171,6 +174,11 @@ export default function MatchTable(props: IMatchProps) {
           { title: 'ELO Avg', field: 'elo_average' },
           { title: <TimerIcon />, field: 'game_length', render: d=> d ? moment.utc(d.game_length * 1000).format('HH:mm:ss') : "Unknown" },
         
+          { title: <MidIcon />, field: 'mid', render: d=>d.mid ? (d.mid == true ? "Yes" : "No") : 'No' },
+          { title: 'Nukes', field: 'nukes', render: d=>d.nukes ? d.nukes : '0' },
+          { title: <BunkerIcon />, field: 'bunkers', render: d=>d.bunkers ? d.bunkers : '0' },
+          { title: <SupplyDepotIcon />, field: 'supply_depots', render: d=>d.supply_depots ? d.supply_depots : '0' },
+          { title: <SCVIcon />, field: 'scv', render: d=>d.scv ? d.scv : '0' },
           { title: <Avatar alt="Tanks" src={TankIcon} />, field: 'tanks', render: d=> d.tanks ? d.tanks : '0'},
           { title: <Avatar src={TurretIcon} />, field: 'turrets', render: d=> d.turrets ? d.turrets : '0' }
         ]}

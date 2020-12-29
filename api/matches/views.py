@@ -90,6 +90,7 @@ class MatchView(viewsets.ModelViewSet):
             models.Match
                 .objects
             .select_related(
+                'aggregates'
             ).prefetch_related(
                 # What to go here ?
             )
@@ -128,36 +129,17 @@ class MatchView(viewsets.ModelViewSet):
                     filter=Q(match_winners__profile__id__in=winner_ids),
                     distinct=True
                 ),
-
-
-                tanks=Sum(
-                    'profile_segments__unit_stats__created',
-
-                    filter=Q(
-                        profile_segments__unit_stats__unit__map_name='SiegeBreakerSieged',
-                        profile_segments__segment__measure='final',
-                    ),
-                    distinct=True,
-
-                    output_field=IntegerField()
-                ),
-                nukes=Sum(
-                    'profile_segments__unit_stats__cancelled',
-                    filter=Q(
-                        profile_segments__segment__measure='final',
-                        profile_segments__unit_stats__unit__map_name='Nuke',
-                    ),
-                    distinct=True,
-                    output_field=IntegerField()
-                ),
-                turrets=Sum(
-                    'profile_segments__unit_stats__created',
-                    distinct=True,
-                    filter=Q(
-                        profile_segments__unit_stats__unit__map_name='AutoTurret',
-                    ),
-                    output_field=IntegerField(),
-                ),
+                tanks=F('aggregates__tanks'),
+                scv=F('aggregates__scv'),
+                nukes=F('aggregates__nukes'),
+                turrets=F('aggregates__turrets'),
+                bunkers=F('aggregates__bunkers'),
+                sensors=F('aggregates__sensors'),
+                shields=F('aggregates__shields'),
+                supply_depots=F('aggregates__supply_depots'),
+                names=F('aggregates__names'),
+                alt_winners=F('aggregates__winners'),
+                mid=F('aggregates__mid'),
             )
 
         )
@@ -165,33 +147,6 @@ class MatchView(viewsets.ModelViewSet):
         if len(q_players_winners) > 0:
             return queryset.filter(q_players_winners)
         return queryset
-
-    """
-                   nukes=Sum(
-                       'profile_segments__unit_stats__created',
-                       distinct=True,
-                       filter=Q(
-                           profile_segments__unit_stats__unit__map_name='Nuke',
-                       ),
-                       output_field=IntegerField()
-                   ),
-                   tanks=Sum(
-                       'profile_segments__unit_stats__created',
-                       distinct=True,
-                       filter=Q(
-                           profile_segments__unit_stats__unit__map_name='SiegeBreakerSieged',
-                       ),
-                       output_field=IntegerField()
-                   ),
-                   turrets=Sum(
-                       'profile_segments__unit_stats__created',
-                       distinct=True,
-                       filter=Q(
-                           profile_segments__unit_stats__unit__map_name='AutoTurret',
-                       ),
-                       output_field=IntegerField(),
-                       ),
-                       """
 
 
     @action(methods=['get'], detail=True)
