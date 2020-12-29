@@ -174,11 +174,11 @@ export default function MatchTable(props: IMatchProps) {
           { title: 'ELO Avg', field: 'elo_average' },
           { title: <TimerIcon />, field: 'game_length', render: d=> d ? moment.utc(d.game_length * 1000).format('HH:mm:ss') : "Unknown" },
         
-          { title: <MidIcon />, field: 'mid', render: d=>d.mid ? (d.mid == true ? "Yes" : "No") : 'No' },
+          { title: <Avatar alt="mid" src={MidIcon} />, field: 'mid', render: d=>d.mid ? (d.mid == true ? "Yes" : "No") : 'No' },
           { title: 'Nukes', field: 'nukes', render: d=>d.nukes ? d.nukes : '0' },
-          { title: <BunkerIcon />, field: 'bunkers', render: d=>d.bunkers ? d.bunkers : '0' },
-          { title: <SupplyDepotIcon />, field: 'supply_depots', render: d=>d.supply_depots ? d.supply_depots : '0' },
-          { title: <SCVIcon />, field: 'scv', render: d=>d.scv ? d.scv : '0' },
+          { title: <Avatar alt="bunkers" src={BunkerIcon} />, field: 'bunkers', render: d=>d.bunkers ? d.bunkers : '0' },
+          { title: <Avatar alt="Supply Depots" src={SupplyDepotIcon} />, field: 'supply_depots', render: d=>d.supply_depots ? d.supply_depots : '0' },
+          { title: <Avatar alt="SCV" src={SCVIcon} />, field: 'scv', render: d=>d.scv ? d.scv : '0' },
           { title: <Avatar alt="Tanks" src={TankIcon} />, field: 'tanks', render: d=> d.tanks ? d.tanks : '0'},
           { title: <Avatar src={TurretIcon} />, field: 'turrets', render: d=> d.turrets ? d.turrets : '0' }
         ]}
