@@ -169,8 +169,8 @@ export default function MatchTable(props: IMatchProps) {
             field: 'match_date',
             render: data => moment(data.match_date).format("lll"),
           },
-          { title: 'Players', field: 'players', sorting: false },
-          { title: 'Winners', field: 'winners', sorting: false },
+          { title: 'Players', field: 'names', sorting: false },
+          { title: 'Winners', field: 'alt_winners', sorting: false },
           { title: 'ELO Avg', field: 'elo_average' },
           { title: <TimerIcon />, field: 'game_length', render: d=> d ? moment.utc(d.game_length * 1000).format('HH:mm:ss') : "Unknown" },
         
@@ -178,7 +178,6 @@ export default function MatchTable(props: IMatchProps) {
           { title: 'Nukes', field: 'nukes', render: d=>d.nukes ? d.nukes : '0' },
           { title: <Avatar alt="bunkers" src={BunkerIcon} />, field: 'bunkers', render: d=>d.bunkers ? d.bunkers : '0' },
           { title: <Avatar alt="Supply Depots" src={SupplyDepotIcon} />, field: 'supply_depots', render: d=>d.supply_depots ? d.supply_depots : '0' },
-          { title: <Avatar alt="SCV" src={SCVIcon} />, field: 'scv', render: d=>d.scv ? d.scv : '0' },
           { title: <Avatar alt="Tanks" src={TankIcon} />, field: 'tanks', render: d=> d.tanks ? d.tanks : '0'},
           { title: <Avatar src={TurretIcon} />, field: 'turrets', render: d=> d.turrets ? d.turrets : '0' }
         ]}
