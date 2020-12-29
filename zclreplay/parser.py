@@ -563,9 +563,15 @@ class Replay:
         -------
         None
         """
+
         xfer_unit_init = self.tracked_units.fetch(event)
         unit_name = xfer_unit_init['m_unitTypeName']
         player = self.get_player(xfer_unit_init['m_controlPlayerId'])
+        # Make sure the game isn't already over. Don't transfer units if the game
+        # has ended.
+        if player is not None and player.winner:
+            return
+
         if player is None:
             # 5/3/2020 add
             # Replays are failing with Attribute Error: 'NoneType' has no

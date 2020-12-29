@@ -626,6 +626,21 @@ b'SupplyDepot'
 
         return result
 
+    @property
+    def overview(self) -> typing.Optional[typing.Dict[str, typing.Dict[str, int]]]:
+        result = {}
+        for key in self.totals.keys():
+            for u in self.totals[key]:
+                if u not in result.keys():
+                    result[u] = {'created': 0, 'killed': 0, 'lost': 0, 'cancelled': 0}
+                result[u]['created'] += self.totals[key][u].get('created', 0)
+                result[u]['killed'] += self.totals[key][u].get('killed', 0)
+                result[u]['lost'] += self.totals[key][u].get('lost', 0)
+                result[u]['cancelled'] += self.totals[key][u].get('cancelled', 0)
+
+        return result
+
+
     def all(self):
         exclude = [
             'biological_stats', 'tanks', 'depots', 'towers', 'EngineeringBay',

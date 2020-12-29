@@ -2,6 +2,7 @@ from . import Replay, utils
 from .objects import MatchEvent, Event, Player, StreamItem, SegmentEvent, UpgradeEvent, MessageEvent
 import logging
 import typing
+from time import sleep
 
 
 log = logging.getLogger('zclreplay.streamparser')
@@ -156,6 +157,16 @@ class StreamParser(Replay):
         2. Check for eliminations
         3. Dispatch any match events.
 
+        We need to test for quite a few different conditions here that are modeled
+        by the data
+
+        What if the owner is None?
+        - Mineral spawns... ignore
+        What if the killer is none?
+        - Player left the game. Count as units lost, but none killed
+
+
+
         Parameters
         ----------
         event
@@ -167,31 +178,39 @@ class StreamParser(Replay):
         owner = self.get_player(init_event['m_controlPlayerId'])
         killer = self.get_player(event.get('m_killerPlayerId'))
         result = []
+        tank = False
+        self.tracked_units.delete(event)
 
         if owner is None:
             # Normally mineral spawns. They don't have a owner or killer.
             # Re fetch with a flag to get the reference to the owner's unit.
-            log.debug(f"{init_event.unit} Received None as Owner: {event}")
+            log.debug(f"{init_event.unit} Received None as Owner: {event} Possible Mineral")
+        elif killer is None:
+            # This is caused by either the player leaving or the player's bunker being eliminated
+            # and an automatic despawn.
+            # Player eliminated -> Find the killer and give them credit as well
+            # If the player left, make sure to only increment lost if the game is not over.
+            if not owner.winner:
+                log.debug(f"{owner.name} NO KILLER {init_event.unit}  Winner: {owner.winner} INCREMENT LOST")
+                owner.unit_stats.increment(owner, init_event.unit, 'lost')
+
+            if owner.is_eliminated and owner.killer is not None and owner.killer != owner:
+                log.debug(f"{owner.name} Eliminated By {owner.killer.name} Despawn {init_event.unit}")
+                # We increased units lost from the check above already. Just adjust the killer.
+                owner.killer.unit_stats.increment(owner, init_event.unit, 'killed')
 
 
-        elif killer is not None:
-            # 'killer' is none for things like LargeInvisiblePylons,
-            # Mineral Crystals (Not sure how to find who collects them)
-            # and de-spawning objects like buildings/units from the map when.
-            # a player is eliminated.
-            if killer == owner:
-                # Cancelled unit from init_unit. These are treated just like
-                # deaths in s2protocol. We must track it. Unfortunately, no good
-                # way to tell which player "caused" them to hit cancel.
-                owner.unit_stats.increment(owner, init_event.unit, 'cancelled')
-            else:
-                owner.unit_stats.increment(killer, init_event.unit, 'lost')
-                killer.unit_stats.increment(owner, init_event.unit, 'killed')
+        elif killer == owner:
+            # Cancelled unit from init_unit. These are treated just like
+            # deaths in s2protocol. We must track it. Unfortunately, no good
+            # way to tell which player "caused" them to hit cancel.
+            owner.unit_stats.increment(owner, init_event.unit, 'cancelled')
         else:
-            # This player more than likely despawned and "left the game" without
-            # a team mate to transfer units to. Decrement and a win check is below.
-            owner.unit_stats.increment(owner, init_event.unit, 'lost')
-            log.debug(f"{owner.name}'s {init_event.unit} Received None as killer")
+            # Normal unit died. Tally up
+            if tank:
+                log.debug(f"Calling increment on both owner/killer for '{init_event.unit}'")
+            owner.unit_stats.increment(killer, init_event.unit, 'lost')
+            killer.unit_stats.increment(owner, init_event.unit, 'killed')
 
 
         if init_event.is_unit('Bunker'):
@@ -230,7 +249,7 @@ class StreamParser(Replay):
                 log.debug(f"Owner is None for {init_event}")
 
         # Remove this unit from the tracking pool now that we are all done.
-        self.tracked_units.delete(event)
+        #self.tracked_units.delete(event)
         return [r for r in result if r is not None]
 
     def _check_for_elimination(self, event, owner: Player, killer: typing.Optional[Player]):
