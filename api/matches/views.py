@@ -74,6 +74,7 @@ class MatchView(viewsets.ModelViewSet):
         sort = self.request.query_params.get('sort', '')
         sort = '-match_date' if sort == '' else sort
         primary_filters = Q(status='final', legacy=False)
+        primary_filters &= ~Q(replay=None)
         if league != '':
             primary_filters &= Q(league__id=league)
         if season != '':
