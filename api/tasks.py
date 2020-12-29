@@ -272,17 +272,22 @@ def do_parse(replay_model, replay: StreamParser):
 
         if p.name != profile.name:
             # Track the name change
-            alias, created = models.ProfileAlias.objects.get_or_create(
-                profile=profile,
-                name=p.name,
-                defaults={
-                    'name': p.name
-                }
-            )
-            if not created:
-                if replay.game_time < alias.created:
-                    alias.created = replay.game_time
-                    alias.save()
+            # This is failing and creating multiple. I believe its with async and different
+            # tasks running.
+            try:
+                alias, created = models.ProfileAlias.objects.get_or_create(
+                    profile=profile,
+                    name=p.name,
+                    defaults={
+                        'name': p.name
+                    }
+                )
+                if not created:
+                    if replay.game_time < alias.created:
+                        alias.created = replay.game_time
+                        alias.save()
+            except models.ProfileAlias.MultipleObjectsReturned:
+                log.debug(f'Multiple Aliases returned for {profile.name}. Ignoring')
 
         models.Roster.objects.update_or_create(
             match=match,
