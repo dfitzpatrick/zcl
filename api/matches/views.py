@@ -91,28 +91,7 @@ class MatchView(viewsets.ModelViewSet):
                 .objects
             .select_related(
                 'aggregates'
-            ).prefetch_related(
-                # What to go here ?
             )
-
-            # Reduce the set to help with performance
-            .annotate(
-                players=StringAgg(
-                    'rosters__sc2_profile__name',
-                    delimiter=', ',
-                    distinct=True,
-                ),
-                winners=StringAgg('match_winners__profile__name', delimiter=', ', distinct=True),
-            )
-            .filter (
-                primary_filters,
-                q_filter_players,
-
-                profile_segments__segment__measure='final',
-                profile_segments__unit_stats__unit__map_name__in=filter_units,
-
-            )
-            .order_by(sort)
             .annotate(
                 elo_average=Avg(
                     'rosters__sc2_profile__leaderboards__elo',
@@ -142,7 +121,7 @@ class MatchView(viewsets.ModelViewSet):
                 mid=F('aggregates__mid'),
             )
 
-        )
+        ).filter(primary_filters).order_by(sort)
         # Seems to be an expensive operation. From 450ms to 4500
         if len(q_players_winners) > 0:
             return queryset.filter(q_players_winners)

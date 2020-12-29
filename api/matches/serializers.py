@@ -5,8 +5,8 @@ from ..serializers import RosterSerializer
 from ..profiles.serializers import ProfileSerializer
 
 class MatchSerializer(serializers.ModelSerializer):
-    players = serializers.CharField()
-    winners = serializers.CharField()
+    #players = serializers.CharField()
+    #winners = serializers.CharField()
     #profile_ids = serializers.CharField()
     #winner_ids = serializers.CharField()
     nukes = serializers.IntegerField()
@@ -25,7 +25,7 @@ class MatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Match
         fields = (
-            "id", "created", "updated", "match_date", "players", "winners",
+            "id", "created", "updated", "match_date",
             "game_length", 'league', 'season', "nukes", "tanks", "turrets",
             "elo_average", 'bunkers', 'scv', 'sensors', 'shields', 'supply_depots',
             'names', 'alt_winners', 'mid'
