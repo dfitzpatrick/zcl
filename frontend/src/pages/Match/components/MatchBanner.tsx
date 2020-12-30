@@ -58,7 +58,7 @@ export default function MatchBanner(props: IMatchBannerProps) {
                   <Grid item>
                     <Typography color="secondary">Players:</Typography>
                   </Grid>
-                  <Grid item><Typography>{match.players}</Typography></Grid>
+                  <Grid item><Typography>{match.names}</Typography></Grid>
 
                 </Grid>
 
@@ -77,7 +77,7 @@ export default function MatchBanner(props: IMatchBannerProps) {
                   <Typography color="secondary">
                     Winners: 
                     </Typography></Grid>
-                  <Grid item><Typography>{match.winners}</Typography></Grid>
+                  <Grid item><Typography>{match.alt_winners}</Typography></Grid>
                 </Grid>
                 <Grid container>
                   <Grid item>
