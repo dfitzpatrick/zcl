@@ -1,7 +1,7 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from . import serializers, filters
+from . import serializers, filters, pagination
 from api import models
 from django.contrib.postgres.aggregates import StringAgg
 from django.db.models import F, OuterRef, Subquery, Count, Q, Sum, When, Case, Prefetch, Avg
@@ -15,8 +15,7 @@ class MatchView(viewsets.ModelViewSet):
     serializer_class = serializers.MatchSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     #filterset_class = filters.MatchFilter ok
-
-
+    #pagination_class = pagination.PageNumberPaginationWithoutCount
 
     def get_queryset(self):
         """
@@ -52,19 +51,27 @@ class MatchView(viewsets.ModelViewSet):
         winners = self.request.query_params.get('winners', '')
         player_ids = []
         winner_ids = []
-        q_players_winners = Q()
-        q_filter_players = Q()
+        q_players = Q()
+        q_winners = Q()
 
         if players is not '':
             player_ids = players.split(',')
-            q_players_winners &= Q(players_filter_count=len(player_ids))
+            q_profiles = models.SC2Profile.objects.filter(id__in=player_ids)
+            #q_players_winners &= Q(players_filter_count=len(player_ids))
+            q_players &= Q(rosters__sc2_profile__in=q_profiles)
+            q_players &= Q(players_filter_count=len(player_ids))
 
         if winners is not '':
             winner_ids = winners.split(',')
-            q_players_winners &= Q(rosters__sc2_profile__id__in=winner_ids)
+            winner_profiles = models.SC2Profile.objects.filter(id__in=winner_ids)
+            #winner_profiles = models.MatchWinner.objects.filter(profile__id__in=winner_ids)
+            q_winners &= Q(match_winners__profile__in=winner_profiles)
+            q_winners &= Q(winners_filter_count=len(winner_ids))
 
-        if player_ids or winner_ids:
-            q_filter_players = Q(rosters__sc2_profile__id__in=player_ids + winner_ids)
+          #  q_players_winners &= Q(rosters__sc2_profile__id__in=winner_ids)
+
+        #if player_ids or winner_ids:
+           # q_filter_players = Q(rosters__sc2_profile__id__in=player_ids + winner_ids)
 
         league = self.request.query_params.get('league', '')
         season = self.request.query_params.get('season', '')
@@ -94,12 +101,9 @@ class MatchView(viewsets.ModelViewSet):
             .select_related(
                 'aggregates'
             )
+
+
             .annotate(
-                elo_average=Avg(
-                    'rosters__sc2_profile__leaderboards__elo',
-                    filter=Q(rosters__sc2_profile__leaderboards__mode='2v2v2v2'),
-                    output_field=IntegerField(),
-                ),
                 players_filter_count=Count(
                     'rosters__sc2_profile__id',
                     filter=Q(rosters__sc2_profile__in=player_ids),
@@ -122,11 +126,11 @@ class MatchView(viewsets.ModelViewSet):
                 alt_winners=F('aggregates__winners'),
                 mid=F('aggregates__mid'),
             )
-
+                .filter(q_players, q_winners)
         ).filter(primary_filters)
         # Seems to be an expensive operation. From 450ms to 4500
-        if len(q_players_winners) > 0:
-            queryset = queryset.filter(q_players_winners)
+        #if len(q_players_winners) > 0:
+        #    queryset = queryset.filter(q_players_winners)
         return queryset.order_by(sort)
 
 
